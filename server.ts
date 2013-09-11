@@ -18,12 +18,13 @@ server.on('request',  function(req, res){
     fs.readFile('./'+req.url, function(err, data){
         if( err )
         {
-            console.error(err);
+            console.error(err.message);
+            res.statusCode = 404;
             res.end();
         }
         else {
             var file = data.toString('utf-8');
-            console.log(file);
+            console.log('Requested ' + req.url);
             res.end(file);
         }
     });

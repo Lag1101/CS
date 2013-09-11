@@ -27,8 +27,8 @@ module engine{
     ];
 
     export class Unit{
-        type:string;
-        constructor(type:string) {
+        type:Type;
+        constructor(type:Type) {
             this.type = type;
         }
     }
@@ -45,6 +45,10 @@ module engine{
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
+    Array.prototype.GetRandom = function(){
+         return this[getRandomInt(0,this.length-1)]
+    }
+
     export class Field{
         map:Array;
         width:number;
@@ -57,12 +61,20 @@ module engine{
             for( var y = 0; y < height; y++ )
             {
                 var line = [];
-                for( var x = 0; x < width; x++ ) line.push( new Ceil( FieldType[getRandomInt(0,FieldType.length-1)], []) );
+                for( var x = 0; x < width; x++ ) line.push( new Ceil( FieldType.GetRandom(), []) );
                     this.map.push(line);
             }
         }
         get(x:number, y:number):Ceil{
             return this.map[y][x];
         }
+    }
+
+    export function CreateTeam(teammates_count:number):Array{
+        var team = [];
+
+        for( var i = 0; i < teammates_count; i++ ) team.push( new Unit(UnitType.GetRandom()) );
+
+        return team;
     }
 };

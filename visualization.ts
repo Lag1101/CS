@@ -21,4 +21,7 @@ module visualization{
             canvas_control.strokeRect( x*ceil_size, y*ceil_size, ceil_size, ceil_size);
         }
     }
+    export function ShowTeam():void{
+
+    }
 };
