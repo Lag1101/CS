@@ -6,16 +6,24 @@
  * To change this template use File | Settings | File Templates.
  */
 module engine{
+
+    export class Type{
+        name:string = '';
+        symbol = '';
+        constructor(name: string, symbol){
+            this.name = name;
+            this.symbol = symbol;
+        }
+    }
     export var FieldType:Array = [
-        "forest",
-        "city"
+        new Type("forest", "green"),
+        new Type("city", "brown"),
+        new Type("tower", "gray")
     ];
-
-
-    export var UnitType = [
-        "sniper",
-        "engineer",
-        "soldier"
+    export var UnitType:Array = [
+        new Type("sniper", "green"),
+        new Type("engineer", "brown"),
+        new Type("soldier", "gray")
     ];
 
     export class Unit{
@@ -25,12 +33,16 @@ module engine{
         }
     }
     export class Ceil{
-        type:string;
+        type:Type;
         units:Array;
-        constructor(type:string, units:Array) {
+        constructor(type:Type, units:Array) {
             this.type = type;
             this.units = units;
         }
+    }
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     export class Field{
@@ -41,9 +53,13 @@ module engine{
             this.width = width;
             this.height = height;
             this.map = [];
-            var line = [];
-            for( var i = 0; i < width; i++ ) line.push( new Ceil( FieldType[0], []) );
-            for( var i = 0; i < height; i++ ) this.map.push(line);
+
+            for( var y = 0; y < height; y++ )
+            {
+                var line = [];
+                for( var x = 0; x < width; x++ ) line.push( new Ceil( FieldType[getRandomInt(0,FieldType.length-1)], []) );
+                    this.map.push(line);
+            }
         }
         get(x:number, y:number):Ceil{
             return this.map[y][x];
