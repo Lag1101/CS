@@ -40,7 +40,8 @@ module engine{
         constructor(width:number, height:number) {
             this.width = width;
             this.height = height;
-            var line:Array = [];
+            this.map = [];
+            var line = [];
             for( var i = 0; i < width; i++ ) line.push( new Ceil( FieldType[0], []) );
             for( var i = 0; i < height; i++ ) this.map.push(line);
         }
