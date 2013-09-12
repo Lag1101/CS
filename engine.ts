@@ -28,8 +28,11 @@ module engine{
 
     export class Unit{
         type:Type;
+        x:number;
+        y:number;   // x, y - mast be values in range [0,1)
         constructor(type:Type) {
             this.type = type;
+            this.x = this.y = 0.5;
         }
     }
     export class Ceil{
