@@ -8,25 +8,29 @@
 
 var http = require("http");
 var fs = require("fs");
+var url = require("url")
 
-var server = new http.Server();
+http.createServer( function(req, res){
 
+    var parsedUrl = url.parse(req.url, true);
 
-server.listen(5000, "127.0.0.1");
-server.on('request',  function(req, res){
+    console.log(parsedUrl.pathname);
 
-    fs.readFile('./'+req.url, function(err, data){
-        if( err )
-        {
-            console.error(err.message);
-            res.statusCode = 404;
-            res.end();
-        }
-        else {
-            var file = data.toString('utf-8');
-            console.log('Requested ' + req.url);
-            res.end(file);
-        }
-    });
-}) ;
+    if( parsedUrl.pathname )
+    {
+        fs.readFile(__dirname + parsedUrl.pathname, function(err, data){
+            if( err )
+            {
+                console.error(err.message);
+                res.end(404);
+            }
+            else {
+                res.end(data);
+            }
+        });
+    }
+}).listen(5000, "127.0.0.1") ;
 
+setInterval(function(){
+    console.info(process.memoryUsage());
+}, 1000);
