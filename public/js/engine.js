@@ -1,9 +1,3 @@
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 /**
 * Created with JetBrains WebStorm.
 * User: loman_000
@@ -11,6 +5,13 @@ var __extends = this.__extends || function (d, b) {
 * Time: 22:11
 * To change this template use File | Settings | File Templates.
 */
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+/// <reference path="auxiliary.ts"/>
 var engine;
 (function (engine) {
     (function (UnitType) {
@@ -63,7 +64,6 @@ var engine;
         return UnitProperties;
     })(Properties);
     engine.UnitProperties = UnitProperties;
-
     var CeilProperties = (function (_super) {
         __extends(CeilProperties, _super);
         function CeilProperties(id, symbol, friction) {
@@ -76,25 +76,43 @@ var engine;
     })(Properties);
     engine.CeilProperties = CeilProperties;
 
-    function clone(obj) {
-        if (obj == null || typeof (obj) != 'object')
-            return obj;
-        var temp = new obj.constructor();
-        for (var key in obj)
-            temp[key] = clone(obj[key]);
-        return temp;
-    }
-
     engine.Fields = [
-        new CeilProperties(engine.GroundType.forest, new Color(255, 0, 255, 1.0), 1.5),
-        new CeilProperties(engine.GroundType.city, new Color(255, 255, 0, 1.0), 1.2),
-        new CeilProperties(engine.GroundType.tower, new Color(0, 255, 255, 1.0), 1.0)
+        new CeilProperties(engine.GroundType.forest, new Color(255, 0, 255, 0.5), 1.5),
+        new CeilProperties(engine.GroundType.city, new Color(255, 255, 0, 0.5), 1.2),
+        new CeilProperties(engine.GroundType.tower, new Color(0, 255, 255, 0.5), 1.0)
     ];
     engine.Units = [
         new UnitProperties(engine.UnitType.sniper, new Color(255, 0, 0, 1.0)),
         new UnitProperties(engine.UnitType.engineer, new Color(0, 0, 255, 1.0)),
         new UnitProperties(engine.UnitType.soldier, new Color(0, 255, 0, 1.0))
     ];
+
+    var Ceil = (function () {
+        function Ceil(type) {
+            this.type = type;
+        }
+        return Ceil;
+    })();
+    engine.Ceil = Ceil;
+    var Field = (function () {
+        function Field(width, height) {
+            this.width = width;
+            this.height = height;
+            this.map = [];
+
+            for (var y = 0; y < height; y++) {
+                var line = [];
+                for (var x = 0; x < width; x++)
+                    line.push(new Ceil(auxiliary.clone(auxiliary.GetRandom(engine.Fields))));
+                this.map.push(line);
+            }
+        }
+        Field.prototype.get = function (x, y) {
+            return this.map[y][x];
+        };
+        return Field;
+    })();
+    engine.Field = Field;
 
     var Coordinate = (function () {
         function Coordinate(x, y) {
@@ -111,28 +129,36 @@ var engine;
     })();
     engine.Coordinate = Coordinate;
 
-    var Ceil = (function () {
-        function Ceil(type) {
-            this.type = type;
+    var Object = (function () {
+        function Object(position) {
+            this.position = position;
         }
-        return Ceil;
+        Object.prototype.Live = function (time, world) {
+            throw new Error("Never use clear Object!!! Inherit from it!!!");
+        };
+        return Object;
     })();
-    engine.Ceil = Ceil;
+    engine.Object = Object;
 
-    var Unit = (function () {
+    var Unit = (function (_super) {
+        __extends(Unit, _super);
         function Unit(type, position) {
+            _super.call(this, position);
             this.see_range = 10.0;
             this.speed = 1.0;
             this.type = type;
-            this.position = position;
         }
-        Unit.prototype.HowUnitCanSeeThis = function (coordinate) {
-            var r = Coordinate.distance(this.position, coordinate);
-            if (r >= this.see_range)
-                return 0;
-else
-                //return 1;
-                return (this.see_range - r) / this.see_range;
+        /*HowUnitCanSeeThis(coordinate:Coordinate)
+        {
+        var r = Coordinate.distance(this.position, coordinate);
+        if( r >= this.see_range )
+        return 0;
+        else
+        //return 1;
+        return (this.see_range - r) / this.see_range;
+        }*/
+        Unit.prototype.Live = function (time, world) {
+            // live
         };
         Unit.prototype.MoveToAim = function (aim, field, time) {
             var current_ceil = field.get(Math.floor(this.position.x), Math.floor(this.position.y));
@@ -143,60 +169,41 @@ else
             this.position.y += speed * Math.sin(alpha) * time;
         };
         return Unit;
-    })();
+    })(Object);
     engine.Unit = Unit;
-
-    function getRandomInt(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    function GetRandom(array) {
-        return array[getRandomInt(0, array.length - 1)];
-    }
-
-    var Field = (function () {
-        function Field(width, height) {
-            this.width = width;
-            this.height = height;
-            this.map = [];
-
-            for (var y = 0; y < height; y++) {
-                var line = [];
-                for (var x = 0; x < width; x++)
-                    line.push(new Ceil(clone(GetRandom(engine.Fields))));
-                this.map.push(line);
-            }
-        }
-        Field.prototype.get = function (x, y) {
-            return this.map[y][x];
-        };
-        Field.prototype.MakeFogOfTheWar = function (team) {
-            for (var y = 0.0; y < this.height; y++) {
-                var line = this.map[y];
-                for (var x = 0.0; x < this.width; x++) {
-                    var max_see_ability = 0.0;
-                    var ceil_coordinate = new Coordinate(x + 0.5, y + 0.5);
-                    for (var i = 0; i < team.length; i++) {
-                        var see_ability = team[i].HowUnitCanSeeThis(ceil_coordinate);
-                        if (see_ability > max_see_ability)
-                            max_see_ability = see_ability;
-                    }
-                    line[x].type.symbol.a = max_see_ability;
-                }
-            }
-        };
-        return Field;
-    })();
-    engine.Field = Field;
 
     function CreateTeam(teammates_count) {
         var team = [];
 
         for (var i = 0; i < teammates_count; i++)
-            team.push(new Unit(clone(GetRandom(engine.Units)), new Coordinate(Math.random(), Math.random())));
+            team.push(new Unit(auxiliary.clone(auxiliary.GetRandom(engine.Units)), new Coordinate(Math.random(), Math.random())));
 
         return team;
     }
     engine.CreateTeam = CreateTeam;
+
+    var Game = (function () {
+        function Game(fieldWidth, fieldHeight, teamCapacity, timeStep) {
+            this.timeIntervalDescriptor = null;
+            this.world = new Field(fieldWidth, fieldHeight);
+            this.timeStep = timeStep;
+            CreateTeam(teamCapacity).forEach(function (object) {
+                this.objectPool.push(object);
+            });
+        }
+        Game.prototype.Live = function () {
+            this.objectPool.forEach(function (object) {
+                object.Live(this.timeStep, this.world);
+            });
+        };
+        Game.prototype.Start = function () {
+            this.timeIntervalDescriptor = setInterval(this.Live, this.timeStep);
+        };
+        Game.prototype.Stop = function () {
+            if (this.timeIntervalDescriptor)
+                clearInterval(this.timeIntervalDescriptor);
+        };
+        return Game;
+    })();
 })(engine || (engine = {}));
 //# sourceMappingURL=engine.js.map

@@ -18,7 +18,7 @@ function main():void
     var team:engine.Unit[] = engine.CreateTeam(5);
     var currentUnit:engine.Unit = team[0];
 
-    field.MakeFogOfTheWar(team);
+    //field.MakeFogOfTheWar(team);
 
     setInterval( function(){
         map_canvas_control.clearRect(0,0,map_canvas.width,map_canvas.height);
@@ -32,7 +32,7 @@ function main():void
         currentUnit.position.x = (event.x-this.offsetLeft) / ceil_size;
         currentUnit.position.y = (event.y-this.offsetTop) / ceil_size;
 
-        field.MakeFogOfTheWar(team);
+        //field.MakeFogOfTheWar(team);
     });
     document.addEventListener('keypress', function(event:KeyboardEvent){
         if( event.keyCode >=49 && event.keyCode <= 56 )
