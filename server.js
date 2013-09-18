@@ -1,9 +1,9 @@
 var express = require('express');
 var http = require('http');
 var path = require('path');
-var config = require('config')
-var log = require('libs/log')(module);
-var engine = require("public/js/engine");
+var config = require('./config/index')
+var log = require('./libs/log')(module);
+var engine = require("./public/js/engine");
 
 
 var server = express();
@@ -32,21 +32,34 @@ server.get('/', function(req, res, next) {
 
 var game = new engine.Game(100,100,20);
 game.Start();
+
 var players = [];
+
 server.use('/game', function(req, res, next) {
-    log.info('One more player');
     var player = new engine.Player(res, engine.CreateTeam(5), game);
     players.push(player);
-    res.end("ok");
+    res.end("Total players count " + players.length);
 })
-server.get('/situation', function(req, res, next) {
-    //log.info('Need inormation!');
-    var answer = players.length.toString() + '\n';
-    players.forEach( function(player){
-        answer += JSON.stringify(player.team) + '\n';
+server.get('/WASUP', function(req, res, next) {
+    var situation = new engine.Situation();
+    players.forEach( function( player ){
+        situation.team = player.team;
     });
-    res.send(answer);
+    res.json(situation);
     res.end('ok');
+})
+server.post('/JDI', function(req, res) {
+    var team = '';
+    req
+        .on('readable', function(){
+            team += req.read();
+        })
+        .on('end', function(){
+            players[0].team = JSON.parse(team);;
+            res.end('ok');
+        })
+
+
 })
 
 server.use(express.static(path.join(__dirname, 'public')));

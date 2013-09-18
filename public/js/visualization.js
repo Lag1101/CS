@@ -36,21 +36,21 @@ var visualization;
         canvas_control.fillText(text, x, y);
     }
 
-    function ShowField(canvas_control, field, ceil_size) {
+    visualization.ShowField = function(canvas_control, field, ceil_size) {
         for (var y = 0; y < field.height; y++)
             for (var x = 0; x < field.width; x++) {
-                DrawRect(canvas_control, x * ceil_size, y * ceil_size, ceil_size, ceil_size, field.get(x, y).type.symbol.get());
+                DrawRect(canvas_control, x * ceil_size, y * ceil_size, ceil_size, ceil_size, field.get(x, y).type.symbol);
             }
+    };
+
+    function DrawUnit(canvas_control, unit, ceil_size) {
+        var unit_x = unit.position.x * ceil_size, unit_y = unit.position.y * ceil_size;
+        DrawRound(canvas_control, unit_x, unit_y, 10, unit.type.symbol);
+        DrawCircle(canvas_control, unit_x, unit_y, 10, 2);
     }
-    visualization.ShowField = ShowField;
-    function ShowTeam(canvas_control, team, ceil_size) {
-        for (var i = 0; i < team.length; i++) {
-            var unit = team[i];
-            var unit_x = unit.position.x * ceil_size, unit_y = unit.position.y * ceil_size;
-            DrawRound(canvas_control, unit_x, unit_y, 10, unit.type.symbol.get());
-            DrawCircle(canvas_control, unit_x, unit_y, 10, 2);
-            DrawText(canvas_control, (i + 1).toString(), unit_x, unit_y);
-        }
-    }
-    visualization.ShowTeam = ShowTeam;
+    visualization.DrawTeam = function(canvas_control, team, ceil_size) {
+        team.forEach(function( unit ){
+            DrawUnit(canvas_control, unit, ceil_size);
+        });
+    };
 })(visualization || (visualization = {}));

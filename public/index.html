@@ -15,21 +15,6 @@
 
     <script>
         main();
-
-        function subscribe() {
-            var xhr = new XMLHttpRequest();
-
-            xhr.open("GET", '/situation', true);
-
-            xhr.onload = function() {
-                var el = document.getElementById('text');
-                el.textContent = this.responseText;
-            };
-
-            xhr.send();
-        }
-
-        setInterval(subscribe, 100);
     </script>
 </body>
 </html>

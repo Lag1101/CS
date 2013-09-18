@@ -42,12 +42,12 @@ var auxiliary = {
 
 var engine;
 (function (engine) {
-    UnitType = {
+    var UnitType = {
         sniper:'sniper',
         engineer:'engineer',
         soldier:'soldier'
     };
-    GroundType = {
+    var GroundType = {
         forest:'forest',
         city:'city',
         tower:'tower'
@@ -55,29 +55,11 @@ var engine;
     engine.UnitType = UnitType;
     engine.GroundType = GroundType;
 
-    var Color = (function(){
-        function Color(r,g,b,a){
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.a = a;
-        };
-        Color.prototype.get = function(){
-            return 'rgba(' +
-                this.r.toString() + ',' +
-                this.g.toString() + ',' +
-                this.b.toString() + ',' +
-                this.a.toString() + ')';
-        };
-        return Color;
-    })();
-    engine.Color = Color;
-
     var Properties = (function(){
          function Properties(id, symbol){
              this.id = id;
              this.symbol = symbol;
-         };
+         }
          return Properties;
      })();
     var UnitProperties = (function(){
@@ -85,7 +67,7 @@ var engine;
             Properties.call(this, id, symbol);
             this.health = 100;
             this.speed = 0.1;
-        };
+        }
         auxiliary.inherit_B(UnitProperties, Properties);
         return UnitProperties;
     })();
@@ -95,34 +77,31 @@ var engine;
         function CeilProperties(id, symbol, friction){
             Properties.call(this, id, symbol);
             this.friction = friction ? friction : 1.0;
-        };
+        }
         auxiliary.inherit_B(CeilProperties, Properties);
         return CeilProperties;
     })();
     engine.CeilProperties = CeilProperties;
-    
-    Fields = [
-        new CeilProperties(GroundType.forest,    new Color(255,0,255,0.5),   1.5),
-        new CeilProperties(GroundType.city,      new Color(255,255,0,0.5),   1.2),
-        new CeilProperties(GroundType.tower,     new Color(0,255,255,0.5),   1.0)
-    ];
-    engine.Fields = Fields;
-    Units = [
-        new UnitProperties(UnitType.sniper,   new Color(255,0,0,1.0)),
-        new UnitProperties(UnitType.engineer, new Color(0,0,255,1.0)),
-        new UnitProperties(UnitType.soldier,  new Color(0,255,0,1.0))
-    ];
-    engine.Units = Units;
 
-    var Ceil = (function(){
+    engine.Fields = [
+        new CeilProperties(GroundType.forest,    'rgba(255,0,255,0.5)',   1.5),
+        new CeilProperties(GroundType.city,      'rgba(255,255,0,0.5)',   1.2),
+        new CeilProperties(GroundType.tower,     'rgba(0,255,255,0.5)',   1.0)
+    ];
+    engine.Units = [
+        new UnitProperties(UnitType.sniper,   'rgba(255,0,0,1.0)'),
+        new UnitProperties(UnitType.engineer, 'rgba(0,0,255,1.0)'),
+        new UnitProperties(UnitType.soldier,  'rgba(0,255,0,1.0)')
+    ];
+
+    engine.Ceil = (function(){
         function Ceil( type ){
             this.type = type;
-        };
+        }
         return Ceil;
     })();
-    engine.Ceil = Ceil;
 
-    var Field = (function(){
+    engine.Field = (function(){
         function Field( width, height ){
             this.width = width;
             this.height = height;
@@ -134,31 +113,29 @@ var engine;
                 for( var x = 0; x < width; x++ ) line.push( new engine.Ceil( auxiliary.clone(auxiliary.GetRandom(engine.Fields)) ));
                 this.map.push(line);
             }
-        };
+        }
         Field.prototype.get = function(x, y){
             return this.map[y][x];
         };
         return Field;
     })();
-    engine.Field = Field;
 
-    var Coordinate = (function(){
+    engine.Coordinate = (function(){
         function Coordinate(x,y){
             this.x = x;
             this.y = y;
-        };
+        }
         Coordinate.prototype.distance = function(p1, p2) {
             //return Math.abs( p1.x-p2.x ) + Math.abs( p1.y-p2.y );
             return Math.sqrt( Math.pow( p1.x-p2.x, 2 ) + Math.pow( p1.y-p2.y, 2 ));
         };
         return Coordinate;
     })();
-    engine.Coordinate = Coordinate;
 
     var Object = (function(){
         function Object(position){
             this.position = position;
-        };
+        }
         Object.prototype.Live = function(time, world){
             throw new Error( "Never use clear Object!!! Inherit from it!!!" );
         };
@@ -166,7 +143,7 @@ var engine;
     })();
     engine.Object = Object;
 
-    var Unit = (function(){
+    engine.Unit = (function(){
         function Unit(type, position) {
             engine.Object.call(this, position);
             this.see_range = 10.0;
@@ -189,7 +166,6 @@ var engine;
 
         return Unit;
     })();
-    engine.Unit = Unit;
 
     engine.CreateTeam = function(teammates_count) {
         var team = [];
@@ -197,9 +173,9 @@ var engine;
         for( var i = 0; i < teammates_count; i++ ) team.push( new engine.Unit(auxiliary.clone(auxiliary.GetRandom(engine.Units)), new engine.Coordinate(Math.random(), Math.random())) );
 
         return team;
-    }
+    };
 
-    var Game = (function(){
+    engine.Game = (function(){
         function Game(fieldWidth, fieldHeight, timeStep) {
             this.id = '';
             this.objectPool = [];
@@ -211,8 +187,8 @@ var engine;
             var g = this;
             g.objectPool.forEach( function( object ) {
                 object.Live( g.timeStep, g.world );
-                object.position.x = Math.random();
-                object.position.y = Math.random();
+                //object.position.x = Math.random();
+                //object.position.y = Math.random();
             } );
         };
         Game.prototype.Start = function() {
@@ -231,9 +207,8 @@ var engine;
         };
         return Game;
     })();
-    engine.Game = Game;
 
-    var Player = (function(){
+    engine.Player = (function(){
         function Player(res, team, game){
             this.team = team;
             this.res = res;
@@ -242,7 +217,14 @@ var engine;
         }
         return Player;
     })();
-    engine.Player = Player;
+
+    engine.Situation = (function() {
+        function Situation() {
+            this.team = [];
+            this.otherObjects = [];
+        }
+        return Situation;
+    })();
 })(engine || (engine = {}));
 
 try{
