@@ -1,11 +1,11 @@
 /**
-* Created with JetBrains WebStorm.
-* User: loman_000
-* Date: 10.09.13
-* Time: 22:38
-* To change this template use File | Settings | File Templates.
-*/
-/// <reference path="engine.ts"/>
+ * Created with JetBrains WebStorm.
+ * User: loman_000
+ * Date: 10.09.13
+ * Time: 22:38
+ * To change this template use File | Settings | File Templates.
+ */
+
 var visualization;
 (function (visualization) {
     function DrawRect(canvas_control, x, y, width, height, color) {
@@ -54,4 +54,3 @@ var visualization;
     }
     visualization.ShowTeam = ShowTeam;
 })(visualization || (visualization = {}));
-//# sourceMappingURL=visualization.js.map

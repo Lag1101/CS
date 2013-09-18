@@ -3,6 +3,8 @@ var http = require('http');
 var path = require('path');
 var config = require('config')
 var log = require('libs/log')(module);
+var engine = require("public/js/engine");
+
 
 var server = express();
 server.set('port', config.get('port'));
@@ -25,6 +27,26 @@ server.get('/', function(req, res, next) {
     res.render('index', {
         title: 'Test'
     });
+})
+
+
+var game = new engine.Game(100,100,20);
+game.Start();
+var players = [];
+server.use('/game', function(req, res, next) {
+    log.info('One more player');
+    var player = new engine.Player(res, engine.CreateTeam(5), game);
+    players.push(player);
+    res.end("ok");
+})
+server.get('/situation', function(req, res, next) {
+    //log.info('Need inormation!');
+    var answer = players.length.toString() + '\n';
+    players.forEach( function(player){
+        answer += JSON.stringify(player.team) + '\n';
+    });
+    res.send(answer);
+    res.end('ok');
 })
 
 server.use(express.static(path.join(__dirname, 'public')));
