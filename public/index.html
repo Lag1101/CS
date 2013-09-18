@@ -5,10 +5,16 @@
 </head>
 <body>
 
+    <canvas id="map" width="1024" height="768" style="background-color:black;"></canvas>
+
     <p id='text'></p>
 
+    <script src="js/engine.js"></script>
+    <script src="js/visualization.js"></script>
+    <script src="js/main.js"></script>
+
     <script>
-        //main();
+        main();
 
         function subscribe() {
             var xhr = new XMLHttpRequest();

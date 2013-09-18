@@ -211,8 +211,8 @@ var engine;
             var g = this;
             g.objectPool.forEach( function( object ) {
                 object.Live( g.timeStep, g.world );
-                object.x = Math.random();
-                object.y = Math.random();
+                object.position.x = Math.random();
+                object.position.y = Math.random();
             } );
         };
         Game.prototype.Start = function() {
