@@ -10,11 +10,12 @@ var situation = new engine.Situation();
 
 function submit() {
     var xhr = new XMLHttpRequest();
-    console.log("sended %s", JSON.stringify(situation.team))
+    //console.log("sended %s", JSON.stringify(situation.team))
 
     xhr.open("POST", '/JDI', true);
 
     xhr.send( JSON.stringify(situation.team) );
+    //console.log(JSON.stringify(situation.team))
 }
 
 function subscribe() {
@@ -24,7 +25,7 @@ function subscribe() {
 
     xhr.onload = function() {
         situation = JSON.parse(this.responseText);
-        setTimeout(subscribe, 500);
+        setTimeout(subscribe, 25);
     };
     xhr.onerror = function(err) {
         console.error(err);
@@ -37,26 +38,30 @@ function main() {
     var map_canvas = document.getElementById('map');
     var map_canvas_control = map_canvas.getContext('2d');
 
-    var ceil_size = 16;
+    var ceil_size = 160;
     var field = new engine.Field(map_canvas.width / ceil_size, map_canvas.height / ceil_size);
 
-    var team = situation.team;
-    var currentUnit = null;
+    var currentUnitIndex = 0;
 
     //listeners
     {
         map_canvas.addEventListener('click', function(event){
-            if( currentUnit )
+            //if( situation.team.length < currentUnitIndex )
             {
-                currentUnit.position.x = (event.x-this.offsetLeft) / ceil_size;
-                currentUnit.position.y = (event.y-this.offsetTop) / ceil_size;
+                situation.team[currentUnitIndex].destination = new engine.Coordinate(
+                        (event.x-this.offsetLeft) / ceil_size,
+                        (event.y-this.offsetTop) / ceil_size);
 
+                //situation.team[currentUnitIndex].position.y = (event.y-this.offsetTop) / ceil_size;
+                submit();
             }
-            submit();
         });
         document.addEventListener('keypress', function(event){
             if( event.keyCode >=49 && event.keyCode <= 56 )
-                currentUnit = team[event.keyCode-49];
+            {
+                currentUnitIndex = event.keyCode-49;
+                console.log('Choosed %d unit', currentUnitIndex);
+            }
         });
     }
 
@@ -68,6 +73,6 @@ function main() {
 
             visualization.ShowField(map_canvas_control, field, ceil_size);
             visualization.DrawTeam(map_canvas_control, situation.team, ceil_size);
-        }, 100 );
+        }, 25 );
     }
 }

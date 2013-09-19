@@ -65,8 +65,6 @@ var engine;
     var UnitProperties = (function(){
         function UnitProperties(id, symbol){
             Properties.call(this, id, symbol);
-            this.health = 100;
-            this.speed = 0.1;
         }
         auxiliary.inherit_B(UnitProperties, Properties);
         return UnitProperties;
@@ -84,8 +82,8 @@ var engine;
     engine.CeilProperties = CeilProperties;
 
     engine.Fields = [
-        new CeilProperties(GroundType.forest,    'rgba(255,0,255,0.5)',   1.5),
-        new CeilProperties(GroundType.city,      'rgba(255,255,0,0.5)',   1.2),
+        new CeilProperties(GroundType.forest,    'rgba(255,0,255,0.5)',   2.0),
+        new CeilProperties(GroundType.city,      'rgba(255,255,0,0.5)',   0.5),
         new CeilProperties(GroundType.tower,     'rgba(0,255,255,0.5)',   1.0)
     ];
     engine.Units = [
@@ -115,6 +113,8 @@ var engine;
             }
         }
         Field.prototype.get = function(x, y){
+            if( x < 0 || x >= this.width || y < 0 || y >= this.height )
+                throw new Error( "Coordinates aren't correct: " + x.toString() + " " + y.toString() );
             return this.map[y][x];
         };
         return Field;
@@ -125,12 +125,12 @@ var engine;
             this.x = x;
             this.y = y;
         }
-        Coordinate.prototype.distance = function(p1, p2) {
-            //return Math.abs( p1.x-p2.x ) + Math.abs( p1.y-p2.y );
-            return Math.sqrt( Math.pow( p1.x-p2.x, 2 ) + Math.pow( p1.y-p2.y, 2 ));
-        };
         return Coordinate;
     })();
+    function distance(p1, p2) {
+        //return Math.abs( p1.x-p2.x ) + Math.abs( p1.y-p2.y );
+        return Math.sqrt( Math.pow( p1.x-p2.x, 2 ) + Math.pow( p1.y-p2.y, 2 ));
+    };
 
     var Object = (function(){
         function Object(position){
@@ -147,20 +147,49 @@ var engine;
         function Unit(type, position) {
             engine.Object.call(this, position);
             this.see_range = 10.0;
-            this.speed = 1.0;
+            this.speed = 0.01;
             this.type = type;
-        }
-        Unit.prototype.Live = function(time, world) {
-            // live
-        };
-        Unit.prototype.MoveToAim = function(aim, field, time) {
-            var current_ceil = field.get( Math.floor(this.position.x), Math.floor(this.position.y) );
-            var speed = this.speed / current_ceil.type.friction;
-            var alpha = Math.atan2( aim.x - this.position.x, aim.y - this.position.y );
+            this.destination = null;
 
-            this.position.x += speed * Math.cos( alpha ) * time;
-            this.position.y += speed * Math.sin( alpha ) * time;
+        }
+        Unit.prototype.IsNear = function( distance ) {
+             return distance < 0.1 ? true : false;
+        }
+        Unit.prototype.Live = function( time, world) {
+            // live
+            this.Move( time, world );
         };
+        Unit.prototype.Move = function( time, world ) {
+            if( this.destination === null ) return;
+
+            var total_distance = distance( this.position, this.destination );
+
+            if( this.IsNear( total_distance ) ) {
+                this.destination = null;
+                return;
+            }
+
+            var current_ceil = world.get( Math.floor( this.position.x), Math.floor( this.position.y ) );
+            var speed = this.speed / current_ceil.type.friction;
+            var dir = {   x: (this.destination.x - this.position.x)/total_distance,
+                        y: (this.destination.y - this.position.y)/total_distance };
+
+            var distance_per_time = speed * time;
+
+            if( total_distance <= distance_per_time ) {
+                this.position = auxiliary.clone( this.destination );
+                this.destination = null;
+            } else {
+                var speed_vector = {x: speed * dir.x,
+                                    y: speed * dir.y};
+
+                this.position.x += speed_vector.x * time;
+                this.position.y += speed_vector.y * time;
+            }
+        };
+        Unit.prototype.SetDestination = function(destination) {
+            this.destination = destination;
+        }
 
         auxiliary.inherit_B(Unit, Object);
 
@@ -178,18 +207,22 @@ var engine;
     engine.Game = (function(){
         function Game(fieldWidth, fieldHeight, timeStep) {
             this.id = '';
-            this.objectPool = [];
+            this.players = [];
             this.timeIntervalDescriptor = null;
             this.world = new engine.Field(fieldWidth, fieldHeight);
             this.timeStep = timeStep;
         };
         Game.prototype.Live = function() {
             var g = this;
-            g.objectPool.forEach( function( object ) {
-                object.Live( g.timeStep, g.world );
-                //object.position.x = Math.random();
-                //object.position.y = Math.random();
-            } );
+            try{
+                g.players.forEach( function( player ) {
+                    player.team.forEach( function( unit ) {
+                        unit.Live( /*g.timeStep*/1, g.world );
+                    } );
+                } );
+            } catch(e) {
+                console.error(e.message);
+            }
         };
         Game.prototype.Start = function() {
             var g = this;
@@ -198,22 +231,17 @@ var engine;
         Game.prototype.Stop = function() {
             if( this.timeIntervalDescriptor ) clearInterval( this.timeIntervalDescriptor );
         };
-        Game.prototype.AddObject = function(object) {
-            this.objectPool.push(object);
-        };
-        Game.prototype.AddObjects = function(objects) {
-            var g = this;
-            objects.forEach( function( object ){ g.AddObject(object); });
+        Game.prototype.AddPlayer = function(player) {
+            this.players.push(player);
         };
         return Game;
     })();
 
     engine.Player = (function(){
-        function Player(res, team, game){
+        function Player(team, game){
             this.team = team;
-            this.res = res;
             this.linkToGame = game;
-            game.AddObjects(this.team);
+            game.AddPlayer(this);
         }
         return Player;
     })();
