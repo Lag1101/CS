@@ -4,6 +4,7 @@ var path = require('path');
 var config = require('./config/index')
 var log = require('./libs/log')(module);
 var engine = require("./public/js/engine");
+require("./public/js/engine_methods");
 
 
 var server = express();
@@ -32,6 +33,7 @@ server.get('/', function(req, res, next) {
 
 var game = new engine.Game(10,10,20);
 var player = new engine.Player(engine.CreateTeam(5), game);
+game.AddPlayer(player);
 
 game.Start();
 

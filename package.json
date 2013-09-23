@@ -9,6 +9,7 @@
     "express": "*",
     "ejs": "*",
     "winston": "*",
-    "nconf": "*"
+    "nconf": "*",
+    "async": "*"
   }
 }
