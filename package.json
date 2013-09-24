@@ -10,6 +10,8 @@
     "ejs": "*",
     "winston": "*",
     "nconf": "*",
-    "async": "*"
+    "async": "*",
+    "connect-mongo": "*",
+    "mongoose": "*"
   }
 }

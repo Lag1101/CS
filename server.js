@@ -5,6 +5,10 @@ var config = require('./config/index')
 var log = require('./libs/log')(module);
 var engine = require("./public/js/engine");
 require("./public/js/engine_methods");
+var transport = require("./public/js/commands");
+
+//var mogoose = require("./libs/mongoose");
+var MongoStore = require('connect-mongo')(express);
 
 
 var server = express();
@@ -23,6 +27,13 @@ server.use(express.bodyParser()); // parse from POST to rec.body
 
 server.use(express.cookieParser());  // parse to req.cookies
 
+/*server.use(express.session({
+    secret: config.get('session:secret'),   //9xz8hz49d8hz49r8hz4r9.SHA256
+    key: config.get('session:sid'),
+    cookie: config.get('session:cookie')
+    //store: new MongoStore({mongoose_connection: mongoose.connection})
+}));    */
+
 server.use(server.router);
 server.get('/', function(req, res, next) {
     res.render('index', {
@@ -31,32 +42,39 @@ server.get('/', function(req, res, next) {
 })
 
 
-var game = new engine.Game(10,10,20);
+var game = new engine.Game(10,10,3);
 var player = new engine.Player(engine.CreateTeam(5), game);
 game.AddPlayer(player);
 
 game.Start();
 
-server.get('/WASUP', function(req, res, next) {
-    var situation = new engine.Situation();
-
-    situation.team = player.team;
-
-    res.json(situation);
+server.get('/team_create', function(req, res) {
+    res.json(player.team);
+    res.end('ok');
+});
+server.get('/team_update', function(req, res) {
+    var coordinates = transport.TeamCoordinatesToArray(player.team);
+    res.json(coordinates);
+    res.end('ok');
+});
+server.get('/create_world', function(req, res) {
+    res.json(game.world);
     res.end('ok');
 })
 server.post('/JDI', function(req, res) {
-    var team = '';
+    var message = '';
     req
         .on('readable', function(){
-            team += req.read();
+            message += req.read();
         })
         .on('end', function(){
-            team = JSON.parse(team);
-            for( var i = 0; i < player.team.length; i++ ) {
-                player.team[i].SetDestination( team[i].destination );
+            message = transport.decode(message);
+
+            switch(message.what) {
+                case transport.commands.move:
+                    player.team[message.who].SetDestination( message.target );
             }
-            //console.log(JSON.stringify(player.team))
+            //console.log(JSON.stringify(player.message))
             res.end('ok');
         })
 })

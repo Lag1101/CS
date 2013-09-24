@@ -21,19 +21,20 @@ var auxiliary = require('./auxiliary');
                     });
                 },
                 function(err) {
-                    console.error( "Хьюстон, у нас проблемы!" );
+                    console.error( "Хьюстон, у нас проблемы!" + err.message);
                 });
 
         };
         Game.prototype.Start = function() {
             var g = this;
-            this.timeIntervalDescriptor = setInterval( function(){g.Live();}, this.timeStep );
+            this.timeIntervalDescriptor = setInterval( function(){g.Live();}, g.timeStep );
         };
         Game.prototype.Stop = function() {
             if( this.timeIntervalDescriptor ) clearInterval( this.timeIntervalDescriptor );
         };
         Game.prototype.AddPlayer = function(player) {
-            this.players.push(player);
+            var g = this;
+            g.players.push(player);
         };
     })(engine.Game || (engine.Game = {}));
     (function(Unit){

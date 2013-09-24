@@ -7,58 +7,52 @@
  */
 
 var situation = new engine.Situation();
+var field = null;
 
-function submit() {
+function submit(message) {
     var xhr = new XMLHttpRequest();
-    //console.log("sended %s", JSON.stringify(situation.team))
 
     xhr.open("POST", '/JDI', true);
 
-    xhr.send( JSON.stringify(situation.team) );
-    //console.log(JSON.stringify(situation.team))
+    xhr.send( message );
 }
 
-function subscribe() {
+function subscribe(arg) {
     var xhr = new XMLHttpRequest();
 
-    xhr.open("GET", '/WASUP', true);
+    xhr.open("GET", arg.url, true);
 
     xhr.onload = function() {
-        situation = JSON.parse(this.responseText);
-        setTimeout(subscribe, 25);
+        arg.callback(JSON.parse(this.responseText));
+        if( arg.isOnce === false )
+            setTimeout(function(){subscribe(arg);}, 25);
     };
     xhr.onerror = function(err) {
         console.error(err);
-        setTimeout(subscribe, 500);
+        setTimeout(function(){subscribe(arg);}, 500);
     };
 
     xhr.send();
 }
+
 function main() {
     var map_canvas = document.getElementById('map');
     var map_canvas_control = map_canvas.getContext('2d');
 
-    var ceil_size = 160;
-    var field = new engine.Field(map_canvas.width / ceil_size, map_canvas.height / ceil_size);
-
     var currentUnitIndex = 0;
 
+    var ceil_size = 160;
     //listeners
     {
         map_canvas.addEventListener('click', function(event){
-            //if( situation.team.length < currentUnitIndex )
-            {
-                situation.team[currentUnitIndex].destination = new engine.Coordinate(
-                    (event.x-this.offsetLeft) / ceil_size,
-                    (event.y-this.offsetTop) / ceil_size);
-
-                //situation.team[currentUnitIndex].position.y = (event.y-this.offsetTop) / ceil_size;
-                submit();
-            }
+            submit( Transport.code(currentUnitIndex,
+                                    Transport.commands.move,
+                                    new engine.Coordinate( (event.x-this.offsetLeft) / ceil_size,
+                                                           (event.y-this.offsetTop) / ceil_size))
+            );
         });
         document.addEventListener('keypress', function(event){
-            if( event.keyCode >=49 && event.keyCode <= 56 )
-            {
+            if( event.keyCode >=49 && event.keyCode <= 56 ) {
                 currentUnitIndex = event.keyCode-49;
                 console.log('Choosed %d unit', currentUnitIndex);
             }
@@ -67,12 +61,35 @@ function main() {
 
     //JDI
     {
-        subscribe();
+        subscribe({
+            callback: function(data){
+                situation.team = data;
+            },
+            url: '/team_create',
+            isOnce: true
+        });
+        subscribe({
+            callback: function(data){
+                Transport.ArrayToTeamCoordinates(data, situation.team);
+            },
+            url: '/team_update',
+            isOnce: false
+        });
+        subscribe({
+            callback: function(data){
+                field = data;
+            },
+            url: '/create_world',
+            isOnce: true
+        });
         setInterval( function(){
             map_canvas_control.clearRect(0,0,map_canvas.width,map_canvas.height);
 
-            visualization.ShowField(map_canvas_control, field, ceil_size);
-            visualization.DrawTeam(map_canvas_control, situation.team, ceil_size);
+            if( field !== null ) {
+                visualization.ShowField(map_canvas_control, field, ceil_size);
+                if( situation )
+                    visualization.DrawTeam(map_canvas_control, situation.team, ceil_size);
+            }
         }, 25 );
     }
 }
