@@ -56,8 +56,8 @@ var auxiliary = require('./auxiliary');
 
             var current_ceil = world.get( Math.floor( this.position.x), Math.floor( this.position.y ) );
             var speed = this.speed / current_ceil.type.friction;
-            var dir = {   x: (this.destination.x - this.position.x)/total_distance,
-                y: (this.destination.y - this.position.y)/total_distance };
+            var dir = { x: (this.destination.x - this.position.x)/total_distance,
+                        y: (this.destination.y - this.position.y)/total_distance };
 
             var distance_per_time = speed * time;
 
@@ -66,7 +66,7 @@ var auxiliary = require('./auxiliary');
                 this.destination = null;
             } else {
                 var speed_vector = {x: speed * dir.x,
-                    y: speed * dir.y};
+                                    y: speed * dir.y};
 
                 this.position.x += speed_vector.x * time;
                 this.position.y += speed_vector.y * time;
@@ -99,6 +99,6 @@ var auxiliary = require('./auxiliary');
     })(engine.Field);
 
 
-})(engine || (engine = {}));
+})(engine);
 
 

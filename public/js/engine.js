@@ -8,7 +8,7 @@
 
 var auxiliary = (auxiliary || (auxiliary = require('./auxiliary')) );
 
-var engine;
+var engine = {};
 (function (engine) {
     engine.UnitType = {
         sniper:'sniper',
@@ -21,22 +21,16 @@ var engine;
         tower:'tower'
     };
 
-    engine.UnitProperties = (function(){
-        function UnitProperties(id, symbol){
+    engine.UnitProperties = function(id, symbol){
             this.id = id;
             this.symbol = symbol;
-        }
-        return UnitProperties;
-    })();
+    };
 
-    engine.CeilProperties = (function(){
-        function CeilProperties(id, symbol, friction){
+    engine.CeilProperties = function(id, symbol, friction){
             this.id = id;
             this.symbol = symbol;
             this.friction = friction ? friction : 1.0;
-        }
-        return CeilProperties;
-    })();
+    };
 
     engine.Fields = [
         new engine.CeilProperties(engine.GroundType.forest,    'rgba(255,0,255,0.5)',   2.0),
@@ -49,15 +43,11 @@ var engine;
         new engine.UnitProperties(engine.UnitType.soldier,  'rgba(0,255,0,1.0)')
     ];
 
-    engine.Ceil = (function(){
-        function Ceil( type ){
+    engine.Ceil = function( type ){
             this.type = type;
-        }
-        return Ceil;
-    })();
+    };
 
-    engine.Field = (function(){
-        function Field( width, height ){
+    engine.Field = function( width, height ){
             this.width = width;
             this.height = height;
             this.map = [];
@@ -68,55 +58,38 @@ var engine;
                 for( var x = 0; x < width; x++ ) line.push( new engine.Ceil( auxiliary.clone(auxiliary.GetRandom(engine.Fields)) ));
                 this.map.push(line);
             }
-        }
-        return Field;
-    })();
+    };
 
-    engine.Coordinate = (function(){
-        function Coordinate(x,y){
+    engine.Coordinate = function(x,y){
             this.x = x;
             this.y = y;
-        }
-        return Coordinate;
-    })();
+    };
 
-    engine.Unit = (function(){
-        function Unit(type, position) {
+    engine.Unit = function(type, position) {
             this.see_range = 10.0;
             this.speed = 0.01;
             this.type = type;
             this.destination = null;
             this.position = position;
-        }
-        return Unit;
-    })();
+    };
 
-    engine.Game = (function(){
-        function Game(fieldWidth, fieldHeight, timeStep) {
+    engine.Game = function(fieldWidth, fieldHeight, timeStep) {
             this.id = '';
             this.players = [];
-            this.timeIntervalDescriptor = null;
+            this.timeIntervalDescriptor = 0;
             this.world = new engine.Field(fieldWidth, fieldHeight);
             this.timeStep = timeStep;
-        }
-        return Game;
-    })();
+    };
 
-    engine.Player = (function(){
-        function Player(team, game){
+    engine.Player = function(team, game){
             this.team = team;
             this.linkToGame = game;
-        }
-        return Player;
-    })();
+    };
 
-    engine.Situation = (function() {
-        function Situation() {
+    engine.Situation = function() {
             this.team = [];
-        }
-        return Situation;
-    })();
-})(engine || (engine = {}));
+    };
+})(engine);
 
 try{
     module.exports = engine;

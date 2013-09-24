@@ -49,8 +49,8 @@ function main() {
             //if( situation.team.length < currentUnitIndex )
             {
                 situation.team[currentUnitIndex].destination = new engine.Coordinate(
-                        (event.x-this.offsetLeft) / ceil_size,
-                        (event.y-this.offsetTop) / ceil_size);
+                    (event.x-this.offsetLeft) / ceil_size,
+                    (event.y-this.offsetTop) / ceil_size);
 
                 //situation.team[currentUnitIndex].position.y = (event.y-this.offsetTop) / ceil_size;
                 submit();
