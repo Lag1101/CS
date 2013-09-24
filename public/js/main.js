@@ -63,24 +63,24 @@ function main() {
     {
         subscribe({
             callback: function(data){
+                field = data;
+            },
+            url: '/create_world',
+            isOnce: true
+        });
+        subscribe({
+            callback: function(data){
                 situation.team = data;
             },
-            url: '/team_create',
+            url: '/team?do=create',
             isOnce: true
         });
         subscribe({
             callback: function(data){
                 Transport.ArrayToTeamCoordinates(data, situation.team);
             },
-            url: '/team_update',
+            url: '/team?do=update',
             isOnce: false
-        });
-        subscribe({
-            callback: function(data){
-                field = data;
-            },
-            url: '/create_world',
-            isOnce: true
         });
         setInterval( function(){
             map_canvas_control.clearRect(0,0,map_canvas.width,map_canvas.height);

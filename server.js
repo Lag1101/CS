@@ -4,8 +4,9 @@ var path = require('path');
 var config = require('./config/index')
 var log = require('./libs/log')(module);
 var engine = require("./public/js/engine");
+var url = require('url')
 require("./public/js/engine_methods");
-var transport = require("./public/js/commands");
+var Transport = require("./public/js/commands");
 
 //var mogoose = require("./libs/mongoose");
 var MongoStore = require('connect-mongo')(express);
@@ -48,19 +49,24 @@ game.AddPlayer(player);
 
 game.Start();
 
-server.get('/team_create', function(req, res) {
-    res.json(player.team);
-    res.end('ok');
-});
-server.get('/team_update', function(req, res) {
-    var coordinates = transport.TeamCoordinatesToArray(player.team);
-    res.json(coordinates);
-    res.end('ok');
-});
 server.get('/create_world', function(req, res) {
     res.json(game.world);
     res.end('ok');
-})
+});
+server.get('/team', function(req, res) {
+    var params = url.parse(req.url, true, true);
+    switch( params.query.do ) {
+        case 'update':
+            var coordinates = Transport.TeamCoordinatesToArray(player.team);
+            res.json(coordinates);
+            break;
+        case 'create':
+            res.json(player.team);
+            break;
+    }
+    res.end('ok');
+});
+
 server.post('/JDI', function(req, res) {
     var message = '';
     req
@@ -68,10 +74,10 @@ server.post('/JDI', function(req, res) {
             message += req.read();
         })
         .on('end', function(){
-            message = transport.decode(message);
+            message = Transport.decode(message);
 
             switch(message.what) {
-                case transport.commands.move:
+                case Transport.commands.move:
                     player.team[message.who].SetDestination( message.target );
             }
             //console.log(JSON.stringify(player.message))

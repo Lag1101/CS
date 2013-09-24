@@ -17,15 +17,14 @@ var Transport = {};
         this.who = who;
         this.what = what;
         this.target = target;
-    };
+    }
 
     Transport.code = function(who, what, target) {
-        return auxiliary.LZW.encode( JSON.stringify( new Action(who, what, target) ) );
+        return /*auxiliary.LZW.encode*/( JSON.stringify( new Action(who, what, target) ) );
     };
 
     Transport.decode = function(message) {
-        var action = JSON.parse( auxiliary.LZW.decode( message ) );
-        return action;
+        return JSON.parse( /*auxiliary.LZW.decode*/( message ) );
     };
     Transport.TeamCoordinatesToArray = function(team) {
         var array = [];
