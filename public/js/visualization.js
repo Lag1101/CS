@@ -48,9 +48,41 @@ var visualization;
         DrawRound(canvas_control, unit_x, unit_y, 10, unit.type.symbol);
         DrawCircle(canvas_control, unit_x, unit_y, 10, 2);
     }
+    function DrawBullet(canvas_control, unit, ceil_size) {
+        var unit_x = unit.position.x * ceil_size, unit_y = unit.position.y * ceil_size;
+        DrawRound(canvas_control, unit_x, unit_y, 3, "rgb(255,0,0)");
+        DrawCircle(canvas_control, unit_x, unit_y, 3, 2);
+    }
     visualization.DrawTeam = function(canvas_control, team, ceil_size) {
         team.forEach(function( unit ){
             DrawUnit(canvas_control, unit, ceil_size);
         });
     };
+    visualization.DrawBullets = function(canvas_control, bullets, ceil_size) {
+        bullets.forEach(function( unit ){
+            DrawBullet(canvas_control, unit, ceil_size);
+        });
+    };
+
+    visualization.DrawFogOfTheWar = function(canvas_control, field, team, ceil_size) {
+        var transparent = function(a) { return "rgba(0,0,0,"+ a.toString() + ")"; }
+
+        var position = new engine.Coordinate(0,0);
+        for (var y = 0; y < field.height; y++) {
+            position.y = y + 0.5;
+            for (var x = 0; x < field.width; x++) {
+                position.x = x + 0.5;
+                var max_visible = 0.0;
+                team.forEach(function(unit) {
+                    var visible = engine.HowUnitCanSeeThis(unit, position);
+                    if( visible > max_visible ) max_visible = visible;
+                });
+                //DrawText(canvas_control, max_visible,  x * ceil_size, y * ceil_size);
+                //if ( max_visible > 0 )
+                DrawRect(canvas_control, x * ceil_size, y * ceil_size, ceil_size, ceil_size, transparent(1.0-max_visible));
+            }
+        }
+    };
+
+
 })(visualization || (visualization = {}));

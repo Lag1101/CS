@@ -66,16 +66,43 @@ var engine = {};
     };
 
     engine.Unit = function(type, position) {
-            this.see_range = 10.0;
+            this.see_range = 5.0;
             this.speed = 0.01;
             this.type = type;
             this.destination = null;
             this.position = position;
     };
+    /**
+     * @return {number}
+     */
+    engine.HowUnitCanSeeThis = function(unit, position) {
+        var distance = engine.distance(unit.position, position);
+
+        if( distance >= unit.see_range ) {
+            return 0;
+        } else {
+            return (unit.see_range - distance) / unit.see_range;
+        }
+    };
+    engine.distance = function(p1, p2) {
+        //return Math.abs( p1.x-p2.x ) + Math.abs( p1.y-p2.y );
+        return Math.sqrt( Math.pow( p1.x-p2.x, 2 ) + Math.pow( p1.y-p2.y, 2 ));
+    };
+
+    engine.Bullet = function(position, direction) {
+        this.position = position;
+        this.angle = direction;
+        this.speed = 0.03;
+        this.speedComponents = {
+            x: this.speed * Math.cos(this.angle),
+            y: this.speed * Math.sin(this.angle)
+        }
+    };
 
     engine.Game = function(fieldWidth, fieldHeight, timeStep) {
             this.id = '';
             this.players = [];
+            this.bullets = [];
             this.timeIntervalDescriptor = 0;
             this.world = new engine.Field(fieldWidth, fieldHeight);
             this.timeStep = timeStep;
@@ -87,7 +114,8 @@ var engine = {};
     };
 
     engine.Situation = function() {
-            this.team = [];
+        this.team = [];
+        this.bullets = [];
     };
 })(engine);
 

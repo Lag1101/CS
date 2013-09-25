@@ -43,9 +43,10 @@ server.get('/', function(req, res, next) {
 })
 
 
-var game = new engine.Game(10,10,3);
+var game = new engine.Game(32,32,6);
 var player = new engine.Player(engine.CreateTeam(5), game);
 game.AddPlayer(player);
+game.bullets.push(new engine.Bullet(new engine.Coordinate(0,1), 0));
 
 game.Start();
 
@@ -57,13 +58,17 @@ server.get('/team', function(req, res) {
     var params = url.parse(req.url, true, true);
     switch( params.query.do ) {
         case 'update':
-            var coordinates = Transport.TeamCoordinatesToArray(player.team);
+            var coordinates = Transport.ObjectsCoordinatesToArray(player.team);
             res.json(coordinates);
             break;
         case 'create':
             res.json(player.team);
             break;
     }
+    res.end('ok');
+});
+server.get('/bullets', function(req, res) {
+    res.json(game.bullets);
     res.end('ok');
 });
 
@@ -78,7 +83,8 @@ server.post('/JDI', function(req, res) {
 
             switch(message.what) {
                 case Transport.commands.move:
-                    player.team[message.who].SetDestination( message.target );
+                    if(player.team[message.who])
+                        player.team[message.who].SetDestination( message.target );
             }
             //console.log(JSON.stringify(player.message))
             res.end('ok');

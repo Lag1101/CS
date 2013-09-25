@@ -15,14 +15,25 @@ var auxiliary = require('./auxiliary');
         Game.prototype.Live = function() {
             var g = this;
 
-            async.each(g.players, function(player, callback) {
+            async.each(g.players, function(player) {
                     player.team.forEach(function( unit ) {
                         unit.Live( g.timeStep, g.world );
+                        //unit.Fire( 0, g.bullets );
                     });
                 },
                 function(err) {
                     console.error( "Хьюстон, у нас проблемы!" + err.message);
                 });
+                for(var i = 0; i < g.bullets.length; )
+                {
+                    var bullet = g.bullets[i];
+                    bullet.Live( g.timeStep, g.world );
+                    if( bullet.position.x < 0 || bullet.position.x >= g.world.width ||
+                        bullet.position.y < 0 || bullet.position.y >= g.world.height)
+                        delete g.bullets.splice(i,1);
+                    else
+                        i++;
+                }
 
         };
         Game.prototype.Start = function() {
@@ -38,9 +49,12 @@ var auxiliary = require('./auxiliary');
         };
     })(engine.Game || (engine.Game = {}));
     (function(Unit){
+        /**
+         * @return {boolean}
+         */
         Unit.prototype.IsNear = function( distance ) {
-            return distance < 0.1 ? true : false;
-        }
+            return distance < 0.1;
+        };
         Unit.prototype.Live = function( time, world) {
             // live
             this.Move( time, world );
@@ -73,24 +87,33 @@ var auxiliary = require('./auxiliary');
                 this.position.y += speed_vector.y * time;
             }
         };
-        Unit.prototype.SetDestination = function(destination) {
+        Unit.prototype.SetDestination = function (destination) {
             this.destination = destination;
+        };
+        Unit.prototype.Fire = function( direction, bulletPool ) {
+            var bullet = new engine.Bullet( auxiliary.clone(this.position), direction);
+            bulletPool.push(bullet);
         }
     })(engine.Unit);
+
+    (function(Bullet){
+        Bullet.prototype.Live = function(time, world) {
+            this.position.x += this.speedComponents.x * time;
+            this.position.y += this.speedComponents.y * time;
+        }
+    })(engine.Bullet);
 
     engine.CreateTeam = function(teammates_count) {
         var team = [];
 
-        for( var i = 0; i < teammates_count; i++ ) team.push( new engine.Unit(auxiliary.clone(auxiliary.GetRandom(engine.Units)), new engine.Coordinate(Math.random(), Math.random())) );
+        for( var i = 0; i < teammates_count; i++ )
+            team.push(
+                new engine.Unit(auxiliary.clone(auxiliary.GetRandom(engine.Units)),
+                new engine.Coordinate(Math.random(), Math.random()))
+            );
 
         return team;
     };
-
-    engine.distance = function(p1, p2) {
-        //return Math.abs( p1.x-p2.x ) + Math.abs( p1.y-p2.y );
-        return Math.sqrt( Math.pow( p1.x-p2.x, 2 ) + Math.pow( p1.y-p2.y, 2 ));
-    };
-
     (function(Field){
         Field.prototype.get = function(x, y){
             if( x < 0 || x >= this.width || y < 0 || y >= this.height )

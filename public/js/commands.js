@@ -26,14 +26,14 @@ var Transport = {};
     Transport.decode = function(message) {
         return JSON.parse( /*auxiliary.LZW.decode*/( message ) );
     };
-    Transport.TeamCoordinatesToArray = function(team) {
+    Transport.ObjectsCoordinatesToArray = function(team) {
         var array = [];
         for( var i = 0; i < team.length; i++ ) {
             array.push( {n:i, position: team[i].position} );
         }
         return array;
     };
-    Transport.ArrayToTeamCoordinates = function(array, team) {
+    Transport.ArrayToObjectsCoordinates = function(array, team) {
         array.forEach(function(upd){
             team[upd.n].position = upd.position;
         });

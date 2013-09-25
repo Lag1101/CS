@@ -6,8 +6,6 @@
  * To change this template use File | Settings | File Templates.
  */
 
-var situation = new engine.Situation();
-var field = null;
 
 function submit(message) {
     var xhr = new XMLHttpRequest();
@@ -35,20 +33,24 @@ function subscribe(arg) {
     xhr.send();
 }
 
-function main() {
+function OnFieldReady(field) {
     var map_canvas = document.getElementById('map');
+    var fog_canvas = document.getElementById('fog');
     var map_canvas_control = map_canvas.getContext('2d');
+    var fog_canvas_control = fog_canvas.getContext('2d');
 
     var currentUnitIndex = 0;
 
-    var ceil_size = 160;
+    var situation = new engine.Situation();
+
+    var ceil_size = map_canvas.width / field.width;
     //listeners
     {
-        map_canvas.addEventListener('click', function(event){
+        fog_canvas.addEventListener('click', function(event){
             submit( Transport.code(currentUnitIndex,
-                                    Transport.commands.move,
-                                    new engine.Coordinate( (event.x-this.offsetLeft) / ceil_size,
-                                                           (event.y-this.offsetTop) / ceil_size))
+                Transport.commands.move,
+                new engine.Coordinate( (event.x-this.offsetLeft) / ceil_size,
+                    (event.y-this.offsetTop) / ceil_size))
             );
         });
         document.addEventListener('keypress', function(event){
@@ -59,37 +61,50 @@ function main() {
         });
     }
 
-    //JDI
-    {
-        subscribe({
-            callback: function(data){
-                field = data;
-            },
-            url: '/create_world',
-            isOnce: true
-        });
-        subscribe({
-            callback: function(data){
-                situation.team = data;
-            },
-            url: '/team?do=create',
-            isOnce: true
-        });
-        subscribe({
-            callback: function(data){
-                Transport.ArrayToTeamCoordinates(data, situation.team);
-            },
-            url: '/team?do=update',
-            isOnce: false
-        });
-        setInterval( function(){
-            map_canvas_control.clearRect(0,0,map_canvas.width,map_canvas.height);
+    subscribe({
+        callback: function(data){
+            situation.team = data;
+        },
+        url: '/team?do=create',
+        isOnce: true
+    });
+    subscribe({
+        callback: function(data){
+            Transport.ArrayToObjectsCoordinates(data, situation.team);
+        },
+        url: '/team?do=update',
+        isOnce: false
+    });
+    subscribe({
+        callback: function(data){
+            situation.bullets = data;
+        },
+        url: '/bullets',
+        isOnce: false
+    });
 
-            if( field !== null ) {
-                visualization.ShowField(map_canvas_control, field, ceil_size);
-                if( situation )
-                    visualization.DrawTeam(map_canvas_control, situation.team, ceil_size);
-            }
-        }, 25 );
-    }
+
+    map_canvas_control.clearRect(0, 0, map_canvas.width, map_canvas.height);
+    visualization.ShowField(map_canvas_control, field, ceil_size);
+
+    setInterval( function(){
+        fog_canvas_control.clearRect(0,0,fog_canvas.width, fog_canvas.height);
+        if( situation )
+        {
+            visualization.DrawFogOfTheWar(fog_canvas_control, field, situation.team, ceil_size);
+            visualization.DrawTeam(fog_canvas_control, situation.team, ceil_size);
+            visualization.DrawBullets(fog_canvas_control, situation.bullets, ceil_size);
+        }
+    }, 25 );
+}
+
+function main() {
+
+    subscribe({
+        callback: function(data){
+            OnFieldReady(data);
+        },
+        url: '/create_world',
+        isOnce: true
+    });
 }
