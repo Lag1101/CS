@@ -27,12 +27,15 @@ var auxiliary = {
         return array[this.getRandomInt(0,array.length-1)]
     },
     extend: function (Child, Parent) {
-        var F = function() { }
-        F.prototype = Parent.prototype
-        Child.prototype = new F()
-        Child.prototype.constructor = Child
-        Child.superclass = Parent.prototype
+        var F = function() {};
+        F.prototype = Parent.prototype;
+        Child.prototype = new F();
+        Child.prototype.constructor = Child;
+        Child.superclass = Parent.prototype;
     } ,
+    isInBounds :function(value, low, high) {
+        return value >= low && value < high;
+    },
     LZW:{
         // LZW-compress a string
         encode: function(s) {

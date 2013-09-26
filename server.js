@@ -44,14 +44,16 @@ server.get('/', function(req, res, next) {
 
 
 var game = new engine.Game(32,32,6);
-var player = new engine.Player(engine.CreateTeam(5), game);
+var player = new engine.Player(engine.CreateTeam(5, 0, 0), game);
+var defaultEnemy = new engine.Player(engine.CreateTeam(5, 5, 5), game);
 game.AddPlayer(player);
+game.AddPlayer(defaultEnemy);
 game.bullets.push(new engine.Bullet(new engine.Coordinate(0,1), 0));
 
 game.Start();
 
 server.get('/create_world', function(req, res) {
-    res.json(game.world);
+    res.json(game.field);
     res.end('ok');
 });
 server.get('/team', function(req, res) {
@@ -63,6 +65,11 @@ server.get('/team', function(req, res) {
             break;
         case 'create':
             res.json(player.team);
+            break;
+        case 'visible':
+            var enemies = [];
+            enemies = game.GetVisibleUnitsForPlayer(player);
+            res.json(enemies);
             break;
     }
     res.end('ok');

@@ -41,7 +41,7 @@ function OnFieldReady(field) {
 
     var currentUnitIndex = 0;
 
-    var situation = new engine.Situation();
+    var situation = new engine.World();
 
     var ceil_size = map_canvas.width / field.width;
     //listeners
@@ -77,6 +77,13 @@ function OnFieldReady(field) {
     });
     subscribe({
         callback: function(data){
+            situation.enemies = data;
+        },
+        url: '/team?do=visible',
+        isOnce: false
+    });
+    subscribe({
+        callback: function(data){
             situation.bullets = data;
         },
         url: '/bullets',
@@ -93,6 +100,7 @@ function OnFieldReady(field) {
         {
             visualization.DrawFogOfTheWar(fog_canvas_control, field, situation.team, ceil_size);
             visualization.DrawTeam(fog_canvas_control, situation.team, ceil_size);
+            visualization.DrawTeam(fog_canvas_control, situation.enemies, ceil_size);
             visualization.DrawBullets(fog_canvas_control, situation.bullets, ceil_size);
         }
     }, 25 );

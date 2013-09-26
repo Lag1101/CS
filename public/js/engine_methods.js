@@ -10,31 +10,48 @@ var async = require('async');
 var engine = require('./engine');
 var auxiliary = require('./auxiliary');
 
+function Live(world) {
+     world;
+}
+
 (function (engine) {
+    (function(World){
+        World.prototype.SetMyTeam = function(team) {
+            this.team = team;
+        };
+    })(engine.World || (engine.World = {}));
     (function(Game){
         Game.prototype.Live = function() {
             var g = this;
 
             async.each(g.players, function(player) {
                     player.team.forEach(function( unit ) {
-                        unit.Live( g.timeStep, g.world );
+                        unit.Live( g.timeStep, g.field );
                         //unit.Fire( 0, g.bullets );
                     });
                 },
                 function(err) {
-                    console.error( "Хьюстон, у нас проблемы!" + err.message);
+                    throw err;
                 });
-                for(var i = 0; i < g.bullets.length; )
-                {
-                    var bullet = g.bullets[i];
-                    bullet.Live( g.timeStep, g.world );
-                    if( bullet.position.x < 0 || bullet.position.x >= g.world.width ||
-                        bullet.position.y < 0 || bullet.position.y >= g.world.height)
-                        delete g.bullets.splice(i,1);
-                    else
-                        i++;
-                }
-
+            for(var i = 0; i < g.bullets.length; )
+            {
+                var bullet = g.bullets[i];
+                bullet.Live( g.timeStep, g.field );
+                if( !auxiliary.isInBounds(bullet.position.x, 0, g.field.width) ||
+                    !auxiliary.isInBounds(bullet.position.y, 0, g.field.height) )
+                    g.bullets.splice(i,1);
+                else
+                    i++;
+            }
+            async.each( g.players,
+                function( player ){
+                    Live(new engine.World(
+                        player.team,
+                        g.GetVisibleUnitsForPlayer(player),
+                        g.bullets,
+                        g.field
+                    ));
+                });
         };
         Game.prototype.Start = function() {
             var g = this;
@@ -46,6 +63,29 @@ var auxiliary = require('./auxiliary');
         Game.prototype.AddPlayer = function(player) {
             var g = this;
             g.players.push(player);
+        };
+        Game.prototype.GetVisibleUnitsForPlayer = function( player ) {
+            var visibleUnits = [];
+
+            this.players.forEach( function( anotherPlayer ) {
+                if( player !== anotherPlayer ) {
+
+                    for( var i = 0; i < anotherPlayer.team.length; i++ ){
+                        var anotherUnit = anotherPlayer.team[i];
+
+                        for( var j = 0; j < player.team.length; j++ ){
+                             var unit = player.team[j];
+                             if( engine.HowUnitCanSeeThis(unit, anotherUnit.position) > 0 )
+                             {
+                                 visibleUnits.push(anotherUnit);
+                                 break;
+                             }
+                        }
+                    }
+                }
+            } );
+
+            return visibleUnits;
         };
     })(engine.Game || (engine.Game = {}));
     (function(Unit){
@@ -103,17 +143,6 @@ var auxiliary = require('./auxiliary');
         }
     })(engine.Bullet);
 
-    engine.CreateTeam = function(teammates_count) {
-        var team = [];
-
-        for( var i = 0; i < teammates_count; i++ )
-            team.push(
-                new engine.Unit(auxiliary.clone(auxiliary.GetRandom(engine.Units)),
-                new engine.Coordinate(Math.random(), Math.random()))
-            );
-
-        return team;
-    };
     (function(Field){
         Field.prototype.get = function(x, y){
             if( x < 0 || x >= this.width || y < 0 || y >= this.height )

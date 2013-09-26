@@ -104,7 +104,7 @@ var engine = {};
             this.players = [];
             this.bullets = [];
             this.timeIntervalDescriptor = 0;
-            this.world = new engine.Field(fieldWidth, fieldHeight);
+            this.field = new engine.Field(fieldWidth, fieldHeight);
             this.timeStep = timeStep;
     };
 
@@ -113,9 +113,26 @@ var engine = {};
             this.linkToGame = game;
     };
 
-    engine.Situation = function() {
-        this.team = [];
-        this.bullets = [];
+    engine.World = function(team, enemies, bullets, field) {
+        this.team = team || [];
+        this.enemies = enemies || [];
+        this.bullets = bullets || [];
+        this.field = field || {};
+    };
+
+    engine.CreateTeam = function(teammates_count, x, y) {
+        var team = [];
+
+        x = x || 0;
+        y = y || 0;
+
+        for( var i = 0; i < teammates_count; i++ )
+            team.push(
+                new engine.Unit(auxiliary.clone(auxiliary.GetRandom(engine.Units)),
+                    new engine.Coordinate(x + Math.random(), y + Math.random()))
+            );
+
+        return team;
     };
 })(engine);
 
