@@ -9,7 +9,7 @@ require("./public/js/engine_methods");
 var Transport = require("./public/js/commands");
 
 //var mogoose = require("./libs/mongoose");
-var MongoStore = require('connect-mongo')(express);
+//var MongoStore = require('connect-mongo')(express);
 
 
 var server = express();
@@ -40,15 +40,14 @@ server.get('/', function(req, res, next) {
     res.render('index', {
         title: 'Test'
     });
-})
+});
 
-
-var game = new engine.Game(32,32,6);
+var game = new engine.Game(32,32,30);
 var player = new engine.Player(engine.CreateTeam(5, 0, 0), game);
-var defaultEnemy = new engine.Player(engine.CreateTeam(5, 5, 5), game);
+var defaultEnemy = new engine.Player(engine.CreateTeam(1, 8, 8), game);
 game.AddPlayer(player);
 game.AddPlayer(defaultEnemy);
-game.bullets.push(new engine.Bullet(new engine.Coordinate(0,1), 0));
+//game.bullets.push(new engine.Bullet(new engine.Coordinate(0,1), 0));
 
 game.Start();
 
@@ -60,10 +59,6 @@ server.get('/team', function(req, res) {
     var params = url.parse(req.url, true, true);
     switch( params.query.do ) {
         case 'update':
-            var coordinates = Transport.ObjectsCoordinatesToArray(player.team);
-            res.json(coordinates);
-            break;
-        case 'create':
             res.json(player.team);
             break;
         case 'visible':

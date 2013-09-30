@@ -39,14 +39,15 @@ var visualization;
     visualization.ShowField = function(canvas_control, field, ceil_size) {
         for (var y = 0; y < field.height; y++)
             for (var x = 0; x < field.width; x++) {
-                DrawRect(canvas_control, x * ceil_size, y * ceil_size, ceil_size, ceil_size, field.map[y][x].type.symbol);
+                DrawRect(canvas_control, x * ceil_size, y * ceil_size, ceil_size, ceil_size, field.map[y][x].symbol);
             }
     };
 
     function DrawUnit(canvas_control, unit, ceil_size) {
         var unit_x = unit.position.x * ceil_size, unit_y = unit.position.y * ceil_size;
-        DrawRound(canvas_control, unit_x, unit_y, 10, unit.type.symbol);
+        DrawRound(canvas_control, unit_x, unit_y, 10, unit.symbol);
         DrawCircle(canvas_control, unit_x, unit_y, 10, 2);
+        DrawText(canvas_control, unit.health.value, unit_x, unit_y);
     }
     function DrawBullet(canvas_control, unit, ceil_size) {
         var unit_x = unit.position.x * ceil_size, unit_y = unit.position.y * ceil_size;

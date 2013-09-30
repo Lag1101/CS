@@ -11,7 +11,12 @@ var engine = require('./engine');
 var auxiliary = require('./auxiliary');
 
 function Live(world) {
-     world;
+     world.team.forEach(function(unit){
+         if( unit.rounds_to_reload <=0 &&
+             world.enemies.length > 0 &&
+             unit.weapon.range >= engine.distance(unit.position, world.enemies[0].position))
+            unit.FireInPoint(world.enemies[0].position, world.bullets);
+     });
 }
 
 (function (engine) {
@@ -27,7 +32,7 @@ function Live(world) {
             async.each(g.players, function(player) {
                     player.team.forEach(function( unit ) {
                         unit.Live( g.timeStep, g.field );
-                        //unit.Fire( 0, g.bullets );
+                        //unit.FireInDirectionOf( 0, g.bullets );
                     });
                 },
                 function(err) {
@@ -52,6 +57,16 @@ function Live(world) {
                         g.field
                     ));
                 });
+
+            for(var i = 0; i < g.bullets.length; ) { var bullet = g.bullets[i];
+                var victim = bullet.FindMatches(g.players);
+                if( victim !== null ) {
+                    victim.health.value -= bullet.damage;
+                    g.bullets.splice(i,1);
+                } else {
+                    i++;
+                }
+            }
         };
         Game.prototype.Start = function() {
             var g = this;
@@ -98,19 +113,20 @@ function Live(world) {
         Unit.prototype.Live = function( time, world) {
             // live
             this.Move( time, world );
+            this.rounds_to_reload--;
         };
         Unit.prototype.Move = function( time, world ) {
-            if( this.destination === null ) return;
+            if( this.destination == engine.NullCoordinate ) return;
 
             var total_distance = engine.distance( this.position, this.destination );
 
             if( this.IsNear( total_distance ) ) {
-                this.destination = null;
+                this.destination = engine.NullCoordinate;
                 return;
             }
 
             var current_ceil = world.get( Math.floor( this.position.x), Math.floor( this.position.y ) );
-            var speed = this.speed / current_ceil.type.friction;
+            var speed = this.speed / current_ceil.friction;
             var dir = { x: (this.destination.x - this.position.x)/total_distance,
                         y: (this.destination.y - this.position.y)/total_distance };
 
@@ -118,7 +134,7 @@ function Live(world) {
 
             if( total_distance <= distance_per_time ) {
                 this.position = auxiliary.clone( this.destination );
-                this.destination = null;
+                this.destination = engine.NullCoordinate;
             } else {
                 var speed_vector = {x: speed * dir.x,
                                     y: speed * dir.y};
@@ -130,17 +146,42 @@ function Live(world) {
         Unit.prototype.SetDestination = function (destination) {
             this.destination = destination;
         };
-        Unit.prototype.Fire = function( direction, bulletPool ) {
-            var bullet = new engine.Bullet( auxiliary.clone(this.position), direction);
+        Unit.prototype.FireInDirectionOf = function( direction, bulletPool ) {
+            var position = auxiliary.clone(this.position);
+            position.x += this.size*1.1 * Math.cos( direction );
+            position.y += this.size*1.1 * Math.sin( direction );
+            var bullet = new engine.Bullet(
+                position,
+                direction + this.weapon.dispersion * ( Math.random() - 0.5 ),
+                this.weapon.damage
+            );
             bulletPool.push(bullet);
-        }
+            this.rounds_to_reload = this.weapon.reloading_time;
+        };
+        Unit.prototype.FireInPoint = function(coordinate, bulletPool) {
+            var angle = Math.atan2(coordinate.y - this.position.y, coordinate.x - this.position.x);
+
+            this.FireInDirectionOf(angle, bulletPool);
+        };
+
     })(engine.Unit);
 
     (function(Bullet){
         Bullet.prototype.Live = function(time, world) {
             this.position.x += this.speedComponents.x * time;
             this.position.y += this.speedComponents.y * time;
-        }
+        };
+        Bullet.prototype.FindMatches = function(players) {
+            for(var k = 0; k < players.length; k++) { var player = players[k];
+                for(var j = 0; j < player.team.length; j++) { var unit =  player.team[j];
+                    var distance = engine.distance( this.position, unit.position );
+                    if( distance < unit.size ) {
+                        return unit;
+                    }
+                }
+            }
+            return null;
+        };
     })(engine.Bullet);
 
     (function(Field){

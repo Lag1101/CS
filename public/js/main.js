@@ -65,13 +65,6 @@ function OnFieldReady(field) {
         callback: function(data){
             situation.team = data;
         },
-        url: '/team?do=create',
-        isOnce: true
-    });
-    subscribe({
-        callback: function(data){
-            Transport.ArrayToObjectsCoordinates(data, situation.team);
-        },
         url: '/team?do=update',
         isOnce: false
     });

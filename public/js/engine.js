@@ -10,41 +10,69 @@ var auxiliary = (auxiliary || (auxiliary = require('./auxiliary')) );
 
 var engine = {};
 (function (engine) {
-    engine.UnitType = {
-        sniper:'sniper',
-        engineer:'engineer',
-        soldier:'soldier'
-    };
-    engine.GroundType = {
-        forest:'forest',
-        city:'city',
-        tower:'tower'
+    engine.weapons = {
+        dragunov: {
+            reloading_time: 30,
+            dispersion: Math.PI/180.0 * 1.0,
+            range: 10.0,
+            damage: 100
+        },
+        AK: {
+            reloading_time: 2,
+            dispersion: Math.PI/180.0 * 15.0,
+            range: 5.0,
+            damage: 50
+        },
+        PM: {
+            reloading_time: 10,
+            dispersion: Math.PI/180.0 * 10.0,
+            range: 3.0,
+            damage: 20
+        }
     };
 
-    engine.UnitProperties = function(id, symbol){
-            this.id = id;
-            this.symbol = symbol;
+    engine.Units = {
+        keys: ['sniper', 'engineer', 'soldier'],
+        sniper: {
+            symbol: 'rgba(0,0,255,1.0)',
+            max_health: 100,
+            weapon: engine.weapons.dragunov,
+            see_range: 7.0,
+            speed: 0.0025,
+            size: 0.5
+        },
+        engineer: {
+            symbol: 'rgba(0,255,0,1.0)',
+            max_health: 50,
+            weapon: engine.weapons.PM,
+            see_range: 5.0,
+            speed: 0.005,
+            size: 0.5
+        },
+        soldier: {
+            symbol: 'rgba(255,0,0,1.0)',
+            max_health: 150,
+            weapon: engine.weapons.AK,
+            see_range: 5.0,
+            speed: 0.01,
+            size: 0.5
+        }
     };
 
-    engine.CeilProperties = function(id, symbol, friction){
-            this.id = id;
-            this.symbol = symbol;
-            this.friction = friction ? friction : 1.0;
-    };
-
-    engine.Fields = [
-        new engine.CeilProperties(engine.GroundType.forest,    'rgba(255,0,255,0.5)',   2.0),
-        new engine.CeilProperties(engine.GroundType.city,      'rgba(255,255,0,0.5)',   0.5),
-        new engine.CeilProperties(engine.GroundType.tower,     'rgba(0,255,255,0.5)',   1.0)
-    ];
-    engine.Units = [
-        new engine.UnitProperties(engine.UnitType.sniper,   'rgba(255,0,0,1.0)'),
-        new engine.UnitProperties(engine.UnitType.engineer, 'rgba(0,0,255,1.0)'),
-        new engine.UnitProperties(engine.UnitType.soldier,  'rgba(0,255,0,1.0)')
-    ];
-
-    engine.Ceil = function( type ){
-            this.type = type;
+    engine.Fields = {
+        keys: ['forest','city','tower'],
+        forest: {
+            symbol: 'rgba(255,0,255,0.5)',
+            friction: 2.0
+        },
+        city: {
+            symbol: 'rgba(255,255,0,0.5)',
+            friction: 0.5
+        },
+        tower: {
+            symbol: 'rgba(0,255,255,0.5)',
+            friction: 1.0
+        }
     };
 
     engine.Field = function( width, height ){
@@ -55,22 +83,36 @@ var engine = {};
             for( var y = 0; y < height; y++ )
             {
                 var line = [];
-                for( var x = 0; x < width; x++ ) line.push( new engine.Ceil( auxiliary.clone(auxiliary.GetRandom(engine.Fields)) ));
+                for( var x = 0; x < width; x++ )
+                    line.push(
+                        engine.Fields[ 'city' ]
+                    );
                 this.map.push(line);
             }
     };
 
     engine.Coordinate = function(x,y){
-            this.x = x;
-            this.y = y;
+        this.x = x;
+        this.y = y;
+    };
+    engine.NullCoordinate = new engine.Coordinate(-1.0,-1.0);
+
+    engine.Parameter = function( max, min, value ) {
+        this.value = value || max;
+        this.max = max;
+        this.min = min || 0.0;
     };
 
     engine.Unit = function(type, position) {
-            this.see_range = 5.0;
-            this.speed = 0.01;
-            this.type = type;
-            this.destination = null;
-            this.position = position;
+        this.symbol = type.symbol;
+        this.health = new engine.Parameter(type.max_health);
+        this.see_range = type.see_range;
+        this.speed = type.speed;
+        this.destination = engine.NullCoordinate;
+        this.position = position;
+        this.weapon = type.weapon;
+        this.rounds_to_reload = 0;
+        this.size = type.size;
     };
     /**
      * @return {number}
@@ -89,10 +131,11 @@ var engine = {};
         return Math.sqrt( Math.pow( p1.x-p2.x, 2 ) + Math.pow( p1.y-p2.y, 2 ));
     };
 
-    engine.Bullet = function(position, direction) {
+    engine.Bullet = function(position, direction, damage) {
         this.position = position;
         this.angle = direction;
         this.speed = 0.03;
+        this.damage = damage;
         this.speedComponents = {
             x: this.speed * Math.cos(this.angle),
             y: this.speed * Math.sin(this.angle)
@@ -128,8 +171,8 @@ var engine = {};
 
         for( var i = 0; i < teammates_count; i++ )
             team.push(
-                new engine.Unit(auxiliary.clone(auxiliary.GetRandom(engine.Units)),
-                    new engine.Coordinate(x + Math.random(), y + Math.random()))
+                new engine.Unit(( engine.Units[ auxiliary.GetRandom(engine.Units.keys) ] ),
+                new engine.Coordinate(x + Math.random(), y + Math.random()))
             );
 
         return team;
