@@ -31,7 +31,8 @@ function Live(world) {
 
             async.each(g.players, function(player) {
                     player.team.forEach(function( unit ) {
-                        unit.Live( g.timeStep, g.field );
+                        if( engine.IsUnitAlive(unit) )
+                            unit.Live( g.timeStep, g.field );
                         //unit.FireInDirectionOf( 0, g.bullets );
                     });
                 },
@@ -62,6 +63,8 @@ function Live(world) {
                 var victim = bullet.FindMatches(g.players);
                 if( victim !== null ) {
                     victim.health.value -= bullet.damage;
+                    if( victim.health.value < 0 )
+                        victim.health.value = 0;
                     g.bullets.splice(i,1);
                 } else {
                     i++;
@@ -90,7 +93,7 @@ function Live(world) {
 
                         for( var j = 0; j < player.team.length; j++ ){
                              var unit = player.team[j];
-                             if( engine.HowUnitCanSeeThis(unit, anotherUnit.position) > 0 )
+                             if( engine.IsUnitAlive(unit) && engine.HowUnitCanSeeThis(unit, anotherUnit.position) > 0 )
                              {
                                  visibleUnits.push(anotherUnit);
                                  break;

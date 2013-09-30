@@ -64,12 +64,18 @@ var engine = {};
             return (unit.see_range - distance) / unit.see_range;
         }
     };
+    engine.IsUnitAlive = function( unit ) {
+        if( unit.health.value > 0 )
+            return true;
+        else
+            return false;
+    };
     engine.distance = function(p1, p2) {
         //return Math.abs( p1.x-p2.x ) + Math.abs( p1.y-p2.y );
         return Math.sqrt( Math.pow( p1.x-p2.x, 2 ) + Math.pow( p1.y-p2.y, 2 ));
     };
 
-    engine.Bullet = function(position, direction, damage) {
+    engine.Bullet = function(position, direction, damage, speed) {
         this.position = position;
         this.angle = direction;
         this.speed = 0.03;

@@ -45,7 +45,7 @@ var visualization;
 
     function DrawUnit(canvas_control, unit, ceil_size) {
         var unit_x = unit.position.x * ceil_size, unit_y = unit.position.y * ceil_size;
-        DrawRound(canvas_control, unit_x, unit_y, 10, unit.symbol);
+        DrawRound(canvas_control, unit_x, unit_y, 10, engine.IsUnitAlive(unit) ? unit.symbol : 'rgb(128,128,128)');
         DrawCircle(canvas_control, unit_x, unit_y, 10, 2);
         DrawText(canvas_control, unit.health.value, unit_x, unit_y);
     }
@@ -75,8 +75,12 @@ var visualization;
                 position.x = x + 0.5;
                 var max_visible = 0.0;
                 team.forEach(function(unit) {
-                    var visible = engine.HowUnitCanSeeThis(unit, position);
-                    if( visible > max_visible ) max_visible = visible;
+                    if( engine.IsUnitAlive(unit) )
+                    {
+                        var visible = engine.HowUnitCanSeeThis(unit, position);
+                        if( visible > max_visible ) max_visible = visible;
+                    }
+
                 });
                 //DrawText(canvas_control, max_visible,  x * ceil_size, y * ceil_size);
                 //if ( max_visible > 0 )
