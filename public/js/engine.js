@@ -7,73 +7,11 @@
  */
 
 var auxiliary = (auxiliary || (auxiliary = require('./auxiliary')) );
+var stats = (stats || (stats = require('./stats')) );
 
 var engine = {};
 (function (engine) {
-    engine.weapons = {
-        dragunov: {
-            reloading_time: 30,
-            dispersion: Math.PI/180.0 * 1.0,
-            range: 10.0,
-            damage: 100
-        },
-        AK: {
-            reloading_time: 2,
-            dispersion: Math.PI/180.0 * 15.0,
-            range: 5.0,
-            damage: 50
-        },
-        PM: {
-            reloading_time: 10,
-            dispersion: Math.PI/180.0 * 10.0,
-            range: 3.0,
-            damage: 20
-        }
-    };
 
-    engine.Units = {
-        keys: ['sniper', 'engineer', 'soldier'],
-        sniper: {
-            symbol: 'rgba(0,0,255,1.0)',
-            max_health: 100,
-            weapon: engine.weapons.dragunov,
-            see_range: 7.0,
-            speed: 0.0025,
-            size: 0.5
-        },
-        engineer: {
-            symbol: 'rgba(0,255,0,1.0)',
-            max_health: 50,
-            weapon: engine.weapons.PM,
-            see_range: 5.0,
-            speed: 0.005,
-            size: 0.5
-        },
-        soldier: {
-            symbol: 'rgba(255,0,0,1.0)',
-            max_health: 150,
-            weapon: engine.weapons.AK,
-            see_range: 5.0,
-            speed: 0.01,
-            size: 0.5
-        }
-    };
-
-    engine.Fields = {
-        keys: ['forest','city','tower'],
-        forest: {
-            symbol: 'rgba(255,0,255,0.5)',
-            friction: 2.0
-        },
-        city: {
-            symbol: 'rgba(255,255,0,0.5)',
-            friction: 0.5
-        },
-        tower: {
-            symbol: 'rgba(0,255,255,0.5)',
-            friction: 1.0
-        }
-    };
 
     engine.Field = function( width, height ){
             this.width = width;
@@ -85,7 +23,7 @@ var engine = {};
                 var line = [];
                 for( var x = 0; x < width; x++ )
                     line.push(
-                        engine.Fields[ 'city' ]
+                        stats.Fields[ 'city' ]
                     );
                 this.map.push(line);
             }
@@ -171,7 +109,7 @@ var engine = {};
 
         for( var i = 0; i < teammates_count; i++ )
             team.push(
-                new engine.Unit(( engine.Units[ auxiliary.GetRandom(engine.Units.keys) ] ),
+                new engine.Unit(( stats.Units[ auxiliary.GetRandom(stats.Units.keys) ] ),
                 new engine.Coordinate(x + Math.random(), y + Math.random()))
             );
 
