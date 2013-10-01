@@ -48,6 +48,7 @@ var visualization;
         DrawRound(canvas_control, unit_x, unit_y, 10, engine.IsUnitAlive(unit) ? unit.symbol : 'rgb(128,128,128)');
         DrawCircle(canvas_control, unit_x, unit_y, 10, 2);
         DrawText(canvas_control, unit.health.value, unit_x, unit_y);
+        DrawText(canvas_control, unit.weapon.ammo.value.toString(), unit_x, unit_y+10);
     }
     function DrawBullet(canvas_control, unit, ceil_size) {
         var unit_x = unit.position.x * ceil_size, unit_y = unit.position.y * ceil_size;
@@ -66,7 +67,7 @@ var visualization;
     };
 
     visualization.DrawFogOfTheWar = function(canvas_control, field, team, ceil_size) {
-        var transparent = function(a) { return "rgba(0,0,0,"+ a.toString() + ")"; }
+        var transparent = function(a) { return "rgba(0,0,0,"+ a.toString() + ")"; };
 
         var position = new engine.Coordinate(0,0);
         for (var y = 0; y < field.height; y++) {

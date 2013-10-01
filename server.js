@@ -19,10 +19,10 @@ server.set('views', __dirname + '/templates');
 server.set('view engine', 'ejs');
 server.use(express.favicon());
 
-if( server.get('env') == 'development' )
+/*if( server.get('env') == 'development' )
     server.use(express.logger('dev'));
 else
-    server.use(express.logger('default'));
+    server.use(express.logger('default'));*/
 
 server.use(express.bodyParser()); // parse from POST to rec.body
 
@@ -70,7 +70,7 @@ server.get('/team', function(req, res) {
     res.end('ok');
 });
 server.get('/bullets', function(req, res) {
-    res.json(game.bullets);
+    res.json(game.GetVisibleBulletsForPlayer(player));
     res.end('ok');
 });
 

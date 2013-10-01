@@ -41,16 +41,15 @@ var engine = {};
         this.min = min || 0.0;
     };
 
-    engine.Unit = function(type, position) {
-        this.symbol = type.symbol;
-        this.health = new engine.Parameter(type.max_health);
-        this.see_range = type.see_range;
-        this.speed = type.speed;
+    engine.Unit = function(stats, position) {
+        this.symbol = stats.symbol;
+        this.health = new engine.Parameter(stats.max_health);
+        this.see_range = stats.see_range;
+        this.speed = stats.speed;
         this.destination = engine.NullCoordinate;
         this.position = position;
-        this.weapon = type.weapon;
-        this.rounds_to_reload = 0;
-        this.size = type.size;
+        this.weapon = new engine.Weapon( stats.weapon );
+        this.size = stats.size;
     };
     /**
      * @return {number}
@@ -65,10 +64,7 @@ var engine = {};
         }
     };
     engine.IsUnitAlive = function( unit ) {
-        if( unit.health.value > 0 )
-            return true;
-        else
-            return false;
+        return unit.health.value > 0;
     };
     engine.distance = function(p1, p2) {
         //return Math.abs( p1.x-p2.x ) + Math.abs( p1.y-p2.y );
@@ -78,12 +74,19 @@ var engine = {};
     engine.Bullet = function(position, direction, damage, speed) {
         this.position = position;
         this.angle = direction;
-        this.speed = 0.03;
+        this.speed = speed;
         this.damage = damage;
         this.speedComponents = {
             x: this.speed * Math.cos(this.angle),
             y: this.speed * Math.sin(this.angle)
         }
+    };
+
+    engine.Weapon = function(stats) {
+        this.rounds_to_ready = 0;
+        this.rounds_to_end_reload = 0;
+        this.ammo = new engine.Parameter(stats.ammo_capacity);
+        this.stats = stats;
     };
 
     engine.Game = function(fieldWidth, fieldHeight, timeStep) {
