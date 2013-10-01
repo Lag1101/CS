@@ -15,9 +15,8 @@ function Live(world) {
      world.team.forEach(function(unit){
          if( unit.weapon.Ready() )
          {
-             var distance = engine.distance(unit.position, world.enemies[0].position);
-             if( world.enemies.length > 0 &&
-                 unit.weapon.stats.range >= distance )
+             if(    world.enemies.length > 0 &&
+                    unit.weapon.stats.range >= engine.distance(unit.position, world.enemies[0].position))
              unit.FireInPoint(world.enemies[0].position, world.bullets);
          } else if ( unit.weapon.Empty() ) {
              unit.weapon.Reload();
