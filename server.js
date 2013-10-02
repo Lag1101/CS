@@ -1,10 +1,10 @@
 var express = require('express');
 var http = require('http');
 var path = require('path');
-var config = require('./config/index')
+var config = require('./config/index');
 var log = require('./libs/log')(module);
 var engine = require("./public/js/engine_methods");//require("./public/js/engine");
-var url = require('url')
+var url = require('url');
 var Transport = require("./public/js/commands");
 
 //var mogoose = require("./libs/mongoose");
@@ -71,24 +71,24 @@ server.get('/team', function(req, res) {
     res.end('ok');
 });
 
-server.post('/JDI', function(req, res) {
+server.post('/JDI', function (req, res) {
     var message = '';
     req
-        .on('readable', function(){
+        .on('readable', function () {
             message += req.read();
         })
-        .on('end', function(){
+        .on('end', function () {
             message = Transport.decode(message);
 
-            switch(message.what) {
+            switch (message.what) {
                 case Transport.commands.move:
-                    if(player.team[message.who])
-                        player.team[message.who].SetDestination( message.target );
+                    if (player.team[message.who])
+                        player.team[message.who].SetDestination(message.target);
             }
             //console.log(JSON.stringify(player.message))
             res.end('ok');
         })
-})
+});
 
 server.use(express.static(path.join(__dirname, 'public')));
 

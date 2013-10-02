@@ -56,6 +56,9 @@ var engine = {};
             return (unit.stats.see_range - distance) / unit.stats.see_range;
         }
     };
+    /**
+     * @return {boolean}
+     */
     engine.IsUnitAlive = function( unit ) {
         return unit.health > 0;
     };

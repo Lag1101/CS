@@ -223,9 +223,15 @@ function Live(world) {
                 }
             }
         };
+        /**
+         * @return {boolean}
+         */
         Weapon.prototype.Empty = function() {
             return this.ammo <= 0;
         };
+        /**
+         * @return {boolean}
+         */
         Weapon.prototype.Ready = function() {
             return  this.rounds_to_ready == 0 &&
                     this.rounds_to_end_reload == 0 &&
@@ -233,17 +239,17 @@ function Live(world) {
         };
         Weapon.prototype.Reload = function() {
             if( this.rounds_to_end_reload > 0 ) {
-                //allready reloading
+                //already reloading
             } else {
                 this.rounds_to_end_reload = this.stats.rounds_per_reload;
             }
         };
-        Weapon.prototype.Shoot = function(ownner, direction, bulletPool) {
+        Weapon.prototype.Shoot = function(owner, direction, bulletPool) {
             if( this.Ready() && !this.Empty()) {
 
-                var position = auxiliary.clone(ownner.position);
-                position.x += ownner.stats.size*1.1 * Math.cos( direction );
-                position.y += ownner.stats.size*1.1 * Math.sin( direction );
+                var position = auxiliary.clone(owner.position);
+                position.x += owner.stats.size*1.1 * Math.cos( direction );
+                position.y += owner.stats.size*1.1 * Math.sin( direction );
                 var bullet = new engine.Bullet(
                     position,
                     direction + this.stats.dispersion * ( Math.random() - 0.5 ),
