@@ -23,7 +23,7 @@ function subscribe(arg) {
     xhr.onload = function() {
         arg.callback(JSON.parse(this.responseText));
         if( arg.isOnce === false )
-            setTimeout(function(){subscribe(arg);}, 15);
+            setTimeout(function(){subscribe(arg);}, 30);
     };
     xhr.onerror = function(err) {
         console.error(err);
@@ -87,9 +87,11 @@ function OnFieldReady(field) {
             visualization.DrawFogOfTheWar(fog_canvas_control, field, situation.team, ceil_size);
             visualization.DrawTeam(fog_canvas_control, situation.team, ceil_size);
             visualization.DrawTeam(fog_canvas_control, situation.visible.enemies, ceil_size);
+            visualization.MarkUnit(fog_canvas_control, situation.team[currentUnitIndex], ceil_size);
+
             visualization.DrawBullets(fog_canvas_control, situation.visible.bullets, ceil_size);
         }
-    }, 15 );
+    }, 1 );
 }
 
 function main() {

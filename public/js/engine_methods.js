@@ -29,47 +29,9 @@ function Live(world) {
 }
 
 (function (engine) {
-    (function(World){
-        World.prototype.SetMyTeam = function(team) {
-            this.team = team;
-        };
-    })(engine.World || (engine.World = {}));
-
     (function(Game){
         Game.prototype.Live = function() {
             var g = this;
-
-            async.each(g.players, function(player) {
-                    player.team.forEach(function( unit ) {
-                        if( engine.IsUnitAlive(unit) )
-                            unit.Live( g.timeStep, g.field );
-                        //unit.FireInDirectionOf( 0, g.bullets );
-                    });
-                },
-                function(err) {
-                    throw err;
-                });
-            for(var i = 0; i < g.bullets.length; )
-            {
-                var bullet = g.bullets[i];
-                bullet.Live( g.timeStep, g.field );
-                if( !auxiliary.isInBounds(bullet.position.x, 0, g.field.width) ||
-                    !auxiliary.isInBounds(bullet.position.y, 0, g.field.height) )
-                    g.bullets.splice(i,1);
-                else
-                    i++;
-            }
-            for(var i = 0; i < g.bullets.length; ) { var bullet = g.bullets[i];
-                var victim = bullet.FindMatches(g.players);
-                if( victim !== null ) {
-                    victim.health -= bullet.damage;
-                    if( victim.health < 0 )
-                        victim.health = 0;
-                    g.bullets.splice(i,1);
-                } else {
-                    i++;
-                }
-            }
 
             var bulletPool = [];
             async.each( g.players,
@@ -83,6 +45,39 @@ function Live(world) {
                     ));
                 });
             g.bullets = g.bullets.concat(bulletPool);
+
+            for(var i = 0; i < g.bullets.length; )
+            {
+                var bullet = g.bullets[i];
+                bullet.Live( g.timeStep, g.field );
+                if( !auxiliary.isInBounds(bullet.position.current.x, 0, g.field.width) ||
+                    !auxiliary.isInBounds(bullet.position.current.y, 0, g.field.height) )
+                    g.bullets.splice(i,1);
+                else
+                    i++;
+            }
+            for(var i = 0; i < g.bullets.length; ) { var bullet = g.bullets[i];
+                var victim = bullet.FindMatches(g.players);
+                if( victim != null ) {
+                    victim.health -= bullet.damage;
+                    if( victim.health < 0 )
+                        victim.health = 0;
+                    g.bullets.splice(i,1);
+                } else {
+                    i++;
+                }
+            }
+
+            async.each(g.players, function(player) {
+                    player.team.forEach(function( unit ) {
+                        if( engine.IsUnitAlive(unit) )
+                            unit.Live( g.timeStep, g.field );
+                        //unit.FireInDirectionOf( 0, g.bullets );
+                    });
+                },
+                function(err) {
+                    throw err;
+                });
         };
         Game.prototype.Start = function() {
             var g = this;
@@ -124,7 +119,7 @@ function Live(world) {
                 for( var i = 0; i < player.team.length; i++ ) {var unit = player.team[i];
                     if( !engine.IsUnitAlive(unit) ) continue;
 
-                    if( engine.distance( unit.position, bullet.position ) <= unit.stats.see_range )
+                    if( engine.distance( unit.position, bullet.position.current ) <= unit.stats.see_range )
                         visibleBullets.push( bullet );
                 }
             });
@@ -196,16 +191,55 @@ function Live(world) {
 
     (function(Bullet){
         Bullet.prototype.Live = function(time, world) {
-            this.position.x += this.speedComponents.x * time;
-            this.position.y += this.speedComponents.y * time;
+            this.position.last.x = this.position.current.x;
+            this.position.last.y = this.position.current.y;
+            this.position.current.x += this.speedComponents.x * time;
+            this.position.current.y += this.speedComponents.y * time;
         };
         Bullet.prototype.FindMatches = function(players) {
+            var x0 = this.position.last.x;
+            var y0 = this.position.last.y;
+            var x1 = this.position.current.x;
+            var y1 = this.position.current.y;
+
+            var diff = {
+                x: x1 - x0,
+                y: y1 - y0
+            };
+            var s2 = engine.distance2(this.position.current, this.position.last);
+            if( s2 == 0 )
+                return null;
+
             for(var k = 0; k < players.length; k++) { var player = players[k];
                 for(var j = 0; j < player.team.length; j++) { var unit =  player.team[j];
-                    var distance = engine.distance( this.position, unit.position );
-                    if( distance < unit.stats.size ) {
-                        return unit;
+                    var size2 = Math.pow(unit.stats.size/2 + this.size/2 , 2);
+
+                    var distance2_to_line = Math.pow(
+                            -diff.y * unit.position.x +
+                            diff.x * unit.position.y +
+                            x0*y1-x1*y0
+                         , 2)/ s2;
+
+                    if( distance2_to_line < size2 ) {
+                        var distance2_to_current = engine.distance2( this.position.current, unit.position );
+                        if( distance2_to_current < size2 ) {
+                            //console.log('current')
+                            return unit;
+                        }
+                        var distance2_to_last = engine.distance2( this.position.last, unit.position );
+                        if ( distance2_to_last < size2 ) {
+                            //console.log('last')
+                            return unit;
+                        }
+
+                        if( s2 + distance2_to_current > distance2_to_last &&
+                            s2 + distance2_to_last > distance2_to_current) {
+                            //console.log('border')
+                            return unit;
+                        }
                     }
+
+
                 }
             }
             return null;
@@ -248,8 +282,8 @@ function Live(world) {
             if( this.Ready() && !this.Empty()) {
 
                 var position = auxiliary.clone(owner.position);
-                position.x += owner.stats.size*1.1 * Math.cos( direction );
-                position.y += owner.stats.size*1.1 * Math.sin( direction );
+                position.x += (owner.stats.size) * Math.cos( direction );
+                position.y += (owner.stats.size) * Math.sin( direction );
                 var bullet = new engine.Bullet(
                     position,
                     direction + this.stats.dispersion * ( Math.random() - 0.5 ),

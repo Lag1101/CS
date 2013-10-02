@@ -48,14 +48,29 @@ var visualization;
         var size = unit.stats.size * ceil_size;
         DrawRound(canvas_control, unit_x, unit_y, size/2, engine.IsUnitAlive(unit) ? unit.stats.symbol : 'rgb(128,128,128)');
         DrawCircle(canvas_control, unit_x, unit_y, size/2, 2);
-        DrawText(canvas_control, unit.health, unit_x, unit_y+size);
-        DrawText(canvas_control, unit.weapon.ammo.toString(), unit_x, unit_y+size+10);
+        DrawText(canvas_control, unit.health, unit_x, unit_y+size*2);
+        DrawText(canvas_control, unit.weapon.ammo, unit_x, unit_y+size*3);
     }
-    function DrawBullet(canvas_control, unit, ceil_size) {
+    function DrawBullet(canvas_control, bullet, ceil_size) {
+        var unit_x = bullet.position.current.x * ceil_size, unit_y = bullet.position.current.y * ceil_size;
+        var size = bullet.size * ceil_size;
+
+        canvas_control.strokeStyle = 'rgb(0,0,0)';
+        canvas_control.beginPath();
+        canvas_control.moveTo(bullet.position.last.x*ceil_size, bullet.position.last.y*ceil_size );
+        canvas_control.lineTo(unit_x, unit_y );
+        canvas_control.stroke();
+
+        DrawRound(canvas_control, unit_x, unit_y, size/2, "rgb(255,0,0)");
+        DrawCircle(canvas_control, unit_x, unit_y, size/2, 2);
+    }
+
+    visualization.MarkUnit = function(canvas_control, unit, ceil_size) {
         var unit_x = unit.position.x * ceil_size, unit_y = unit.position.y * ceil_size;
-        DrawRound(canvas_control, unit_x, unit_y, 3, "rgb(255,0,0)");
-        DrawCircle(canvas_control, unit_x, unit_y, 3, 2);
-    }
+        var size = unit.stats.size * ceil_size;
+        DrawCircle(canvas_control, unit_x, unit_y, size, 2, 'rgb(255,0,0)');
+    };
+
     visualization.DrawTeam = function(canvas_control, team, ceil_size) {
         team.forEach(function( unit ){
             DrawUnit(canvas_control, unit, ceil_size);

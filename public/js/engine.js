@@ -62,16 +62,25 @@ var engine = {};
     engine.IsUnitAlive = function( unit ) {
         return unit.health > 0;
     };
+    engine.distance2 = function(p1, p2) {
+        //return Math.abs( p1.x-p2.x ) + Math.abs( p1.y-p2.y );
+        return Math.pow( p1.x-p2.x, 2 ) + Math.pow( p1.y-p2.y, 2 );
+    };
     engine.distance = function(p1, p2) {
         //return Math.abs( p1.x-p2.x ) + Math.abs( p1.y-p2.y );
-        return Math.sqrt( Math.pow( p1.x-p2.x, 2 ) + Math.pow( p1.y-p2.y, 2 ));
+        return Math.sqrt( engine.distance2(p1, p2));
     };
 
+
     engine.Bullet = function(position, direction, damage, speed) {
-        this.position = position;
+        this.position = {
+            current: position,
+            last: auxiliary.clone(position)
+        };
         this.angle = direction;
         this.speed = speed;
         this.damage = damage;
+        this.size = 0.1;
         this.speedComponents = {
             x: this.speed * Math.cos(this.angle),
             y: this.speed * Math.sin(this.angle)
