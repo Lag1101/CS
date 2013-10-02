@@ -3,9 +3,8 @@ var http = require('http');
 var path = require('path');
 var config = require('./config/index')
 var log = require('./libs/log')(module);
-var engine = require("./public/js/engine");
+var engine = require("./public/js/engine_methods");//require("./public/js/engine");
 var url = require('url')
-require("./public/js/engine_methods");
 var Transport = require("./public/js/commands");
 
 //var mogoose = require("./libs/mongoose");
@@ -57,20 +56,18 @@ server.get('/create_world', function(req, res) {
 });
 server.get('/team', function(req, res) {
     var params = url.parse(req.url, true, true);
-    switch( params.query.do ) {
+    switch( params.query['do'] ) {
         case 'update':
             res.json(player.team);
             break;
         case 'visible':
-            var enemies = [];
-            enemies = game.GetVisibleUnitsForPlayer(player);
-            res.json(enemies);
+            var visible = {
+                enemies: game.GetVisibleUnitsForPlayer(player),
+                bullets: game.GetVisibleBulletsForPlayer(player)
+            };
+            res.json(visible);
             break;
     }
-    res.end('ok');
-});
-server.get('/bullets', function(req, res) {
-    res.json(game.GetVisibleBulletsForPlayer(player));
     res.end('ok');
 });
 

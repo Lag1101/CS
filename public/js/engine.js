@@ -23,7 +23,8 @@ var engine = {};
                 var line = [];
                 for( var x = 0; x < width; x++ )
                     line.push(
-                        stats.Fields[ 'city' ]
+                        //stats.Fields[ 'city' ]
+                        stats.Fields[ auxiliary.GetRandom(stats.Fields.keys) ]
                     );
                 this.map.push(line);
             }
@@ -35,21 +36,13 @@ var engine = {};
     };
     engine.NullCoordinate = new engine.Coordinate(-1.0,-1.0);
 
-    engine.Parameter = function( max, min, value ) {
-        this.value = value || max;
-        this.max = max;
-        this.min = min || 0.0;
-    };
-
     engine.Unit = function(stats, position) {
-        this.symbol = stats.symbol;
-        this.health = new engine.Parameter(stats.max_health);
-        this.see_range = stats.see_range;
-        this.speed = stats.speed;
+        this.health = stats.max_health;
         this.destination = engine.NullCoordinate;
         this.position = position;
         this.weapon = new engine.Weapon( stats.weapon );
-        this.size = stats.size;
+
+        this.stats = stats;
     };
     /**
      * @return {number}
@@ -57,14 +50,14 @@ var engine = {};
     engine.HowUnitCanSeeThis = function(unit, position) {
         var distance = engine.distance(unit.position, position);
 
-        if( distance >= unit.see_range ) {
+        if( distance >= unit.stats.see_range ) {
             return 0;
         } else {
-            return (unit.see_range - distance) / unit.see_range;
+            return (unit.stats.see_range - distance) / unit.stats.see_range;
         }
     };
     engine.IsUnitAlive = function( unit ) {
-        return unit.health.value > 0;
+        return unit.health > 0;
     };
     engine.distance = function(p1, p2) {
         //return Math.abs( p1.x-p2.x ) + Math.abs( p1.y-p2.y );
@@ -85,7 +78,8 @@ var engine = {};
     engine.Weapon = function(stats) {
         this.rounds_to_ready = 0;
         this.rounds_to_end_reload = 0;
-        this.ammo = new engine.Parameter(stats.ammo_capacity);
+        this.ammo = stats.ammo_capacity;
+
         this.stats = stats;
     };
 
@@ -103,11 +97,14 @@ var engine = {};
             this.linkToGame = game;
     };
 
-    engine.World = function(team, enemies, bullets, field) {
+    engine.World = function(team, enemies, bullets, field, bulletPool) {
         this.team = team || [];
-        this.enemies = enemies || [];
-        this.bullets = bullets || [];
+        this.visible = {
+            bullets: bullets || [],
+            enemies: enemies || []
+        } ;
         this.field = field || {};
+        this.bulletPool = bulletPool;
     };
 
     engine.CreateTeam = function(teammates_count, x, y) {

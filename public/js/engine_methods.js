@@ -9,15 +9,19 @@
 var async = require('async');
 var engine = require('./engine');
 var auxiliary = require('./auxiliary');
-var log = require('../../libs/log')(module);
 
 function Live(world) {
      world.team.forEach(function(unit){
          if( unit.weapon.Ready() )
          {
-             if(    world.enemies.length > 0 &&
-                    unit.weapon.stats.range >= engine.distance(unit.position, world.enemies[0].position))
-             unit.FireInPoint(world.enemies[0].position, world.bullets);
+             if( world.visible.enemies.length > 0 )
+             {
+                 var firstEnemy = world.visible.enemies[0];
+                 var distance = engine.distance(unit.position, firstEnemy.position);
+                 if( unit.weapon.stats.range >= distance)
+                     unit.FireInPoint(firstEnemy.position, world.bulletPool);
+             }
+
          } else if ( unit.weapon.Empty() ) {
              unit.weapon.Reload();
          }
@@ -30,6 +34,7 @@ function Live(world) {
             this.team = team;
         };
     })(engine.World || (engine.World = {}));
+
     (function(Game){
         Game.prototype.Live = function() {
             var g = this;
@@ -54,28 +59,30 @@ function Live(world) {
                 else
                     i++;
             }
-            async.each( g.players,
-                function( player ){
-                    Live(new engine.World(
-                        player.team,
-                        g.GetVisibleUnitsForPlayer(player),
-                        g.bullets,
-                        //g.GetVisibleBulletsForPlayer(player),
-                        g.field
-                    ));
-                });
-
             for(var i = 0; i < g.bullets.length; ) { var bullet = g.bullets[i];
                 var victim = bullet.FindMatches(g.players);
                 if( victim !== null ) {
-                    victim.health.value -= bullet.damage;
-                    if( victim.health.value < 0 )
-                        victim.health.value = 0;
+                    victim.health -= bullet.damage;
+                    if( victim.health < 0 )
+                        victim.health = 0;
                     g.bullets.splice(i,1);
                 } else {
                     i++;
                 }
             }
+
+            var bulletPool = [];
+            async.each( g.players,
+                function( player ){
+                    Live(new engine.World(
+                        player.team,
+                        g.GetVisibleUnitsForPlayer(player),
+                        g.GetVisibleBulletsForPlayer(player),
+                        g.field,
+                        bulletPool
+                    ));
+                });
+            g.bullets = g.bullets.concat(bulletPool);
         };
         Game.prototype.Start = function() {
             var g = this;
@@ -117,13 +124,14 @@ function Live(world) {
                 for( var i = 0; i < player.team.length; i++ ) {var unit = player.team[i];
                     if( !engine.IsUnitAlive(unit) ) continue;
 
-                    if( engine.distance( unit.position, bullet.position ) <= unit.see_range )
+                    if( engine.distance( unit.position, bullet.position ) <= unit.stats.see_range )
                         visibleBullets.push( bullet );
                 }
             });
             return visibleBullets;
         };
     })(engine.Game || (engine.Game = {}));
+
     (function(Unit){
         /**
          * @return {boolean}
@@ -147,7 +155,7 @@ function Live(world) {
             }
 
             var current_ceil = world.get( Math.floor( this.position.x), Math.floor( this.position.y ) );
-            var speed = this.speed / current_ceil.friction;
+            var speed = this.stats.speed / current_ceil.friction;
             var dir = { x: (this.destination.x - this.position.x)/total_distance,
                         y: (this.destination.y - this.position.y)/total_distance };
 
@@ -169,25 +177,14 @@ function Live(world) {
         };
         Unit.prototype.FireInDirectionOf = function( direction, bulletPool ) {
             if( !this.weapon.Ready ) {
-                log.info( "Weapon isn't ready" );
+                console.info( "Weapon isn't ready" );
                 return;
             } else if( this.weapon.Empty() ) {
-                log.info( "Need to reload weapon" );
+                console.info( "Need to reload weapon" );
                 return;
             }
 
-            var position = auxiliary.clone(this.position);
-            position.x += this.size*1.1 * Math.cos( direction );
-            position.y += this.size*1.1 * Math.sin( direction );
-            var bullet = new engine.Bullet(
-                position,
-                direction + this.weapon.stats.dispersion * ( Math.random() - 0.5 ),
-                this.weapon.stats.damage,
-                this.weapon.stats.start_speed
-            );
-            bulletPool.push(bullet);
-
-            this.weapon.Shoot();
+            this.weapon.Shoot(this, direction, bulletPool);
         };
         Unit.prototype.FireInPoint = function(coordinate, bulletPool) {
             var angle = Math.atan2(coordinate.y - this.position.y, coordinate.x - this.position.x);
@@ -206,7 +203,7 @@ function Live(world) {
             for(var k = 0; k < players.length; k++) { var player = players[k];
                 for(var j = 0; j < player.team.length; j++) { var unit =  player.team[j];
                     var distance = engine.distance( this.position, unit.position );
-                    if( distance < unit.size ) {
+                    if( distance < unit.stats.size ) {
                         return unit;
                     }
                 }
@@ -222,12 +219,12 @@ function Live(world) {
             if( this.rounds_to_end_reload > 0 ) {
                 this.rounds_to_end_reload --;
                 if( this.rounds_to_end_reload == 0 ) {
-                    this.ammo.value = this.ammo.max;
+                    this.ammo = this.stats.ammo_capacity;
                 }
             }
         };
         Weapon.prototype.Empty = function() {
-            return this.ammo.value <= 0;
+            return this.ammo <= 0;
         };
         Weapon.prototype.Ready = function() {
             return  this.rounds_to_ready == 0 &&
@@ -241,16 +238,22 @@ function Live(world) {
                 this.rounds_to_end_reload = this.stats.rounds_per_reload;
             }
         };
-        Weapon.prototype.Shoot = function() {
+        Weapon.prototype.Shoot = function(ownner, direction, bulletPool) {
             if( this.Ready() && !this.Empty()) {
-                this.ammo.value --;
 
-                if( this.Empty() )
-                {
-                    //this.Reload();
-                } else {
-                    this.rounds_to_ready = this.stats.rounds_per_shoot;
-                }
+                var position = auxiliary.clone(ownner.position);
+                position.x += ownner.stats.size*1.1 * Math.cos( direction );
+                position.y += ownner.stats.size*1.1 * Math.sin( direction );
+                var bullet = new engine.Bullet(
+                    position,
+                    direction + this.stats.dispersion * ( Math.random() - 0.5 ),
+                    this.stats.damage,
+                    this.stats.start_speed
+                );
+                bulletPool.push(bullet);
+
+                this.ammo --;
+                this.rounds_to_ready = this.stats.rounds_per_shoot;
             }
         }
     })(engine.Weapon);
@@ -267,3 +270,10 @@ function Live(world) {
 })(engine);
 
 
+try{
+    module.exports = engine;
+    console.log("It's server, Brother");
+}catch(e)
+{
+    console.log("It's browser, Brother");
+}

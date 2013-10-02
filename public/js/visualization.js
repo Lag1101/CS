@@ -32,7 +32,7 @@ var visualization;
     function DrawText(canvas_control, text, x, y, color) {
         if (typeof color === "undefined") { color = '#000000'; }
         canvas_control.fillStyle = color;
-        canvas_control.font = "italic 7pt Arial";
+        canvas_control.font = "italic 9pt Arial";
         canvas_control.fillText(text, x, y);
     }
 
@@ -45,10 +45,11 @@ var visualization;
 
     function DrawUnit(canvas_control, unit, ceil_size) {
         var unit_x = unit.position.x * ceil_size, unit_y = unit.position.y * ceil_size;
-        DrawRound(canvas_control, unit_x, unit_y, 10, engine.IsUnitAlive(unit) ? unit.symbol : 'rgb(128,128,128)');
-        DrawCircle(canvas_control, unit_x, unit_y, 10, 2);
-        DrawText(canvas_control, unit.health.value, unit_x, unit_y);
-        DrawText(canvas_control, unit.weapon.ammo.value.toString(), unit_x, unit_y+10);
+        var size = unit.stats.size * ceil_size;
+        DrawRound(canvas_control, unit_x, unit_y, size/2, engine.IsUnitAlive(unit) ? unit.stats.symbol : 'rgb(128,128,128)');
+        DrawCircle(canvas_control, unit_x, unit_y, size/2, 2);
+        DrawText(canvas_control, unit.health, unit_x, unit_y+size);
+        DrawText(canvas_control, unit.weapon.ammo.toString(), unit_x, unit_y+size+10);
     }
     function DrawBullet(canvas_control, unit, ceil_size) {
         var unit_x = unit.position.x * ceil_size, unit_y = unit.position.y * ceil_size;
@@ -74,7 +75,7 @@ var visualization;
             position.y = y + 0.5;
             for (var x = 0; x < field.width; x++) {
                 position.x = x + 0.5;
-                var max_visible = 0.0;
+                var max_visible = 0.3;
                 team.forEach(function(unit) {
                     if( engine.IsUnitAlive(unit) )
                     {

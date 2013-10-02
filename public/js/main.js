@@ -70,16 +70,9 @@ function OnFieldReady(field) {
     });
     subscribe({
         callback: function(data){
-            situation.enemies = data;
+            situation.visible = data;
         },
         url: '/team?do=visible',
-        isOnce: false
-    });
-    subscribe({
-        callback: function(data){
-            situation.bullets = data;
-        },
-        url: '/bullets',
         isOnce: false
     });
 
@@ -93,8 +86,8 @@ function OnFieldReady(field) {
         {
             visualization.DrawFogOfTheWar(fog_canvas_control, field, situation.team, ceil_size);
             visualization.DrawTeam(fog_canvas_control, situation.team, ceil_size);
-            visualization.DrawTeam(fog_canvas_control, situation.enemies, ceil_size);
-            visualization.DrawBullets(fog_canvas_control, situation.bullets, ceil_size);
+            visualization.DrawTeam(fog_canvas_control, situation.visible.enemies, ceil_size);
+            visualization.DrawBullets(fog_canvas_control, situation.visible.bullets, ceil_size);
         }
     }, 15 );
 }
