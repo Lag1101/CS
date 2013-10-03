@@ -36,9 +36,11 @@ var visualization;
         canvas_control.fillText(text, x, y);
     }
 
-    visualization.ShowField = function(canvas_control, field, ceil_size) {
-        for (var y = 0; y < field.height; y++)
-            for (var x = 0; x < field.width; x++) {
+    visualization.ShowField = function(canvas_control, field, ceil_size, min, max) {
+        min = min || {x:0,y:0};
+        max = max || {x:field.width,y:field.height};
+        for (var y = min.y; y < max.y; y++)
+            for (var x = min.x; x < max.x; x++) {
                 DrawRect(canvas_control, x * ceil_size, y * ceil_size, ceil_size, ceil_size, field.map[y][x].symbol);
             }
     };

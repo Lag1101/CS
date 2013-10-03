@@ -57,20 +57,22 @@
 
                 var x = Math.floor(coordinates.x/$scope.ceilSize);
                 var y = Math.floor(coordinates.y/$scope.ceilSize);
-                console.log($scope.ceil);
+
                 var min = {
-                    x:  Math.max(x-$scope.brushSize, 0),
+                    x: Math.max(x-$scope.brushSize, 0),
                     y: Math.max(y-$scope.brushSize, 0)
                 };
                 var max = {
-                    x: Math.min(y+$scope.brushSize, field.height),
-                    y: Math.min(x+$scope.brushSize, field.width)
+                    x: Math.min(x+$scope.brushSize, field.width),
+                    y: Math.min(y+$scope.brushSize, field.height)
                 };
-                for(var i = min.y; i < max.x; i++)
-                    for(var j = min.x; j < max.y; j++)
+                for(var i = min.y; i < max.y; i++)
+                    for(var j = min.x; j < max.x; j++)
+                    {
                         field.map[i][j] = auxiliary.clone( stats.Fields[$scope.ceil] );
+                    }
 
-                visualization.ShowField(canvasControl, field, $scope.ceilSize);
+                visualization.ShowField(canvasControl, field, $scope.ceilSize, min, max);
             }
 
             createButton.addEventListener('click', function() {
