@@ -24,7 +24,7 @@ var engine = {};
                 for( var x = 0; x < width; x++ )
                     line.push(
                         //stats.Fields[ 'city' ]
-                        stats.Fields[ auxiliary.GetRandom(stats.Fields.keys) ]
+                        auxiliary.clone( stats.Fields[  auxiliary.GetRandom(stats.Fields.keys) ] )
                     );
                 this.map.push(line);
             }

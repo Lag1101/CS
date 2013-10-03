@@ -7,7 +7,7 @@ var stats = {};
 (function(stats){
 
     var relativeSpeed = 0.05;
-    var relativeSeeRange = 1.0;
+    var relativeSeeRange = 2.0;
 
     stats.Weapon = function(weaponStats) {
         this.rounds_per_reload = weaponStats.rounds_per_reload;
@@ -79,15 +79,15 @@ var stats = {};
     stats.Fields = {
         keys: ['forest','city','tower'],
         forest: {
-            symbol: 'rgba(255,0,255,0.5)',
+            symbol: 'rgba(255,0,255,1)',
             friction: 2.0
         },
         city: {
-            symbol: 'rgba(255,255,0,0.5)',
+            symbol: 'rgba(255,255,0,1)',
             friction: 0.5
         },
         tower: {
-            symbol: 'rgba(0,255,255,0.5)',
+            symbol: 'rgba(0,255,255,1)',
             friction: 1.0
         }
     };

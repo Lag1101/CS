@@ -1,0 +1,98 @@
+<!doctype html>
+<html ng-app>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<body>
+<div ng-controller="createField">
+    <h1>Map Creator</h1>
+    <hr><input type="number" ng-model="ceilSize" placeholder="ceil size">
+    <input type="text" ng-model="imageSrc" placeholder="image source">
+    <input id="createButton" type="button" value="Create">
+    <hr><input type="number" ng-model="brushSize" placeholder="brushSize">
+
+    <div id="fields">
+    </div>
+    <div>
+        <img id="sample" src={{imageSrc}} style="position: absolute"/>
+
+        <canvas id="canvas" style="position: absolute; opacity: 0.5"></canvas>
+
+    </div>
+
+    <script src="js/auxiliary.js"></script>
+    <script src="js/stats.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/visualization.js"></script>
+    <script>
+        var canvasEl = document.getElementById('canvas');
+        var canvasControl = null;
+        var sample = document.getElementById('sample');
+        var createButton = document.getElementById('createButton');
+        var coordinates = new engine.Coordinate(0,0);
+        var field = {};
+
+
+        canvasEl.onclick = function(event) {
+            coordinates.x = event.x-this.offsetLeft;
+            coordinates.y = event.y-this.offsetTop;
+        };
+        sample.onload = function() {
+            canvasEl.width = this.width; canvasEl.height = this.height;
+
+            canvasControl = canvasEl.getContext('2d');
+            console.log("canvas set",canvasEl.width,canvasEl.height);
+        };
+        stats.Fields.keys.forEach(function(key) {
+            $('#fields').append( "<input type='radio' ng-model='ceil' name='fields' value='" + key + "'> " + key + "<Br>" );
+        });
+
+
+
+        function createField($scope)
+        {
+            function MarkCeil() {
+                if( !$scope.ceil ) return;
+
+                var x = Math.floor(coordinates.x/$scope.ceilSize);
+                var y = Math.floor(coordinates.y/$scope.ceilSize);
+                console.log($scope.ceil);
+                var min = {
+                    x:  Math.max(x-$scope.brushSize, 0),
+                    y: Math.max(y-$scope.brushSize, 0)
+                };
+                var max = {
+                    x: Math.min(y+$scope.brushSize, field.height),
+                    y: Math.min(x+$scope.brushSize, field.width)
+                };
+                for(var i = min.y; i < max.x; i++)
+                    for(var j = min.x; j < max.y; j++)
+                        field.map[i][j] = auxiliary.clone( stats.Fields[$scope.ceil] );
+
+                visualization.ShowField(canvasControl, field, $scope.ceilSize);
+            }
+
+            createButton.addEventListener('click', function() {
+                field = new engine.Field( canvasEl.width / $scope.ceilSize, canvasEl.height / $scope.ceilSize);
+                visualization.ShowField(canvasControl, field, $scope.ceilSize);
+            });
+            canvasEl.onmousedown = function() {
+                this.press = true;
+            };
+            canvasEl.onmousemove = function(event) {
+                if( this.press == false || !this.press) return;
+
+                coordinates.x = event.x-this.offsetLeft;
+                coordinates.y = event.y-this.offsetTop;
+                MarkCeil();
+            };
+            canvasEl.onmouseup = function() {
+                this.press = false;
+            };
+        }
+    </script>
+    
+</div>
+</body>
+</html>

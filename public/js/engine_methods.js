@@ -302,7 +302,7 @@ function Live(world) {
         Field.prototype.get = function(x, y){
             if( x < 0 || x >= this.width || y < 0 || y >= this.height )
                 throw new Error( "Coordinates aren't correct: " + x.toString() + " " + y.toString() );
-            return this.map[y][x];
+            return this.map[Math.floor(y)][Math.floor(x)];
         };
     })(engine.Field);
 
