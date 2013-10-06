@@ -57,7 +57,7 @@ var visualization;
         var unit_x = bullet.position.current.x * ceil_size, unit_y = bullet.position.current.y * ceil_size;
         var size = bullet.size * ceil_size;
 
-        canvas_control.strokeStyle = 'rgb(0,0,0)';
+        canvas_control.strokeStyle = 'rgba(200,200,200,0.5)';
         canvas_control.beginPath();
         canvas_control.moveTo(bullet.position.last.x*ceil_size, bullet.position.last.y*ceil_size );
         canvas_control.lineTo(unit_x, unit_y );

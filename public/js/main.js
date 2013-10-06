@@ -23,7 +23,7 @@ function subscribe(arg) {
     xhr.onload = function() {
         arg.callback(JSON.parse(this.responseText));
         if( arg.isOnce === false )
-            setTimeout(function(){subscribe(arg);}, 30);
+            setTimeout(function(){subscribe(arg);}, 50);
     };
     xhr.onerror = function(err) {
         console.error(err);
@@ -91,7 +91,7 @@ function OnFieldReady(field) {
 
             visualization.DrawBullets(fog_canvas_control, situation.visible.bullets, ceil_size);
         }
-    }, 1 );
+    }, 45 );
 }
 
 function main() {

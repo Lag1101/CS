@@ -7,28 +7,19 @@ var stats = {};
 (function(stats){
 
     var relativeSpeed = 0.05;
-    var relativeSeeRange = 2.0;
+    var relativeSeeRange = 1.0;
 
-    stats.Weapon = function(weaponStats) {
-        this.rounds_per_reload = weaponStats.rounds_per_reload;
-        this.rounds_per_shoot = weaponStats.rounds_per_shoot;
-        this.dispersion = weaponStats.dispersion;
-        this.range = weaponStats.range;
-        this.damage = weaponStats.damage;
-        this.start_speed = weaponStats.start_speed;
-        this.ammo_capacity = weaponStats.ammo_capacity;
-    };
     stats.Weapons = {
-        SVD: new stats.Weapon({
+        SVD: {
             rounds_per_reload: 300,
             rounds_per_shoot: 30,
             dispersion: Math.PI/180.0 * 1.0,
             range: 15.0,
             damage: 100,
-            start_speed: relativeSpeed,
+            start_speed: relativeSpeed*2,
             ammo_capacity: 10
-        }),
-        AK: new stats.Weapon({
+        },
+        AK: {
             rounds_per_reload: 30,
             rounds_per_shoot: 2,
             dispersion: Math.PI/180.0 * 15.0,
@@ -36,16 +27,16 @@ var stats = {};
             damage: 50,
             start_speed: relativeSpeed,
             ammo_capacity: 30
-        }),
-        PM: new stats.Weapon({
+        },
+        PM: {
             rounds_per_reload: 30,
             rounds_per_shoot: 10,
             dispersion: Math.PI/180.0 * 10.0,
             range: 3.0,
             damage: 20,
-            start_speed: relativeSpeed,
+            start_speed: relativeSpeed/2,
             ammo_capacity: 8
-        })
+        }
     };
 
     stats.Units = {
