@@ -36,14 +36,17 @@ function subscribe(arg) {
 function OnFieldReady(field) {
     var map_canvas = document.getElementById('map');
     var fog_canvas = document.getElementById('fog');
-    var map_canvas_control = map_canvas.getContext('2d');
-    var fog_canvas_control = fog_canvas.getContext('2d');
+
+    var ceil_size = map_canvas.width / field.width;
+
+    var UpLayer = new Visualization(fog_canvas.getContext('2d'), fog_canvas.width, fog_canvas.height, ceil_size);
+    var DownLayer = new Visualization(map_canvas.getContext('2d'), map_canvas.width, map_canvas.height, ceil_size);
 
     var currentUnitIndex = 0;
 
     var situation = new engine.World();
 
-    var ceil_size = map_canvas.width / field.width;
+
     //listeners
     {
         fog_canvas.addEventListener('click', function(event){
@@ -76,20 +79,19 @@ function OnFieldReady(field) {
         isOnce: false
     });
 
-
-    map_canvas_control.clearRect(0, 0, map_canvas.width, map_canvas.height);
-    visualization.ShowField(map_canvas_control, field, ceil_size);
+    DownLayer.Clear();
+    DownLayer.ShowField( field );
 
     setInterval( function(){
-        fog_canvas_control.clearRect(0,0,fog_canvas.width, fog_canvas.height);
+        UpLayer.Clear();
         if( situation )
         {
-            visualization.DrawFogOfTheWar(fog_canvas_control, field, situation.team, ceil_size);
-            visualization.DrawTeam(fog_canvas_control, situation.team, ceil_size);
-            visualization.DrawTeam(fog_canvas_control, situation.visible.enemies, ceil_size);
-            visualization.MarkUnit(fog_canvas_control, situation.team[currentUnitIndex], ceil_size);
+            UpLayer.DrawFogOfTheWar( field, situation.team );
+            UpLayer.DrawTeam( situation.team );
+            UpLayer.DrawTeam( situation.visible.enemies );
+            UpLayer.MarkUnit( situation.team[currentUnitIndex] );
 
-            visualization.DrawBullets(fog_canvas_control, situation.visible.bullets, ceil_size);
+            UpLayer.DrawBullets( situation.visible.bullets );
         }
     }, 45 );
 }
