@@ -23,7 +23,7 @@ function subscribe(arg) {
     xhr.onload = function() {
         arg.callback(JSON.parse(this.responseText));
         if( arg.isOnce === false )
-            setTimeout(function(){subscribe(arg);}, 50);
+            setTimeout(function(){subscribe(arg);}, 15);
     };
     xhr.onerror = function(err) {
         console.error(err);
@@ -39,8 +39,9 @@ function OnFieldReady(field) {
 
     var ceil_size = map_canvas.width / field.width;
 
-    var UpLayer = new Visualization(fog_canvas.getContext('2d'), fog_canvas.width, fog_canvas.height, ceil_size);
     var DownLayer = new Visualization(map_canvas.getContext('2d'), map_canvas.width, map_canvas.height, ceil_size);
+   // var vPIXI = new VisualizationPIXI(fog_canvas.width, fog_canvas.height, ceil_size);
+    var UpLayer = new Visualization(fog_canvas.getContext('2d'), fog_canvas.width, fog_canvas.height, ceil_size);
 
     var currentUnitIndex = 0;
 
@@ -55,6 +56,8 @@ function OnFieldReady(field) {
                 new engine.Coordinate( (event.x-this.offsetLeft) / ceil_size,
                     (event.y-this.offsetTop) / ceil_size))
             );
+            console.log('%d went to %f %f ', currentUnitIndex, (event.x-this.offsetLeft) / ceil_size,
+                (event.y-this.offsetTop) / ceil_size);
         });
         document.addEventListener('keypress', function(event){
             if( event.keyCode >=49 && event.keyCode <= 56 ) {
@@ -67,6 +70,7 @@ function OnFieldReady(field) {
     subscribe({
         callback: function(data){
             situation.team = data;
+            //vPIXI.Update(situation.team);
         },
         url: '/team?do=update',
         isOnce: false
@@ -82,7 +86,7 @@ function OnFieldReady(field) {
     DownLayer.Clear();
     DownLayer.ShowField( field );
 
-    setInterval( function(){
+   setInterval( function(){
         UpLayer.Clear();
         if( situation )
         {
@@ -93,7 +97,7 @@ function OnFieldReady(field) {
 
             UpLayer.DrawBullets( situation.visible.bullets );
         }
-    }, 45 );
+    }, 50 );
 }
 
 function main() {

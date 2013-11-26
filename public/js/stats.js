@@ -6,7 +6,7 @@ var stats = {};
 
 (function(stats){
 
-    var relativeSpeed = 0.05;
+    var relativeSpeed = 0.005;
     var relativeSeeRange = 1.0;
 
     stats.Weapons = {

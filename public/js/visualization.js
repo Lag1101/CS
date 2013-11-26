@@ -117,3 +117,57 @@ Visualization.prototype.DrawFogOfTheWar = function( field, team ) {
 Visualization.prototype.Clear = function() {
     this.ctrl.clearRect(0, 0, this.width, this.height);
 };
+
+function VisualizationPIXI(width, height, ceilSize)
+{
+    var v = this;
+    this.teamToShow = [];
+    this.width = width;
+    this.height = height;
+    this.ceilSize = ceilSize;
+
+// create an new instance of a pixi stage
+    this.stage = new PIXI.Stage(0x000000, true);
+
+// create a renderer instance
+    this.renderer = PIXI.autoDetectRenderer(this.width, this.height, null);
+
+    document.body.appendChild(this.renderer.view);
+    this.renderer.view.style.position = "absolute";
+    this.renderer.view.style.top = "0px";
+    this.renderer.view.style.left = "0px";
+
+    this.texture = PIXI.Texture.fromImage("unit.png");
+
+    function animate() {
+        requestAnimFrame( animate );
+
+        // just for fun, lets rotate mr rabbit a little
+        //stage.interactionManager.update();
+        // render the stage
+        v.renderer.render(v.stage);
+    }
+    setTimeout(function(){requestAnimFrame(animate);}, 10);
+}
+VisualizationPIXI.prototype.Update = function(team)
+{
+    var v = this;
+    if( this.teamToShow.length == 0 ) {
+
+        for( var i = 0; i < team.length; i++ ) {
+            var bunny = new PIXI.Sprite(v.texture);
+            bunny.anchor.x = 0.5;
+            bunny.anchor.y = 0.5;
+            v.teamToShow.push(bunny);
+            v.stage.addChild(bunny);
+        }
+    }
+
+    for( var i = 0; i < team.length; i++ ) {
+        var unit = team[i];
+        var bunny = v.teamToShow[i];
+
+        bunny.position.x = unit.position.x* v.ceilSize;
+        bunny.position.y = unit.position.y* v.ceilSize;
+    }
+}

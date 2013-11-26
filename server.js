@@ -17,11 +17,11 @@ server.set('port', config.get('port'));
 server.set('views', __dirname + '/templates');
 server.set('view engine', 'ejs');
 server.use(express.favicon());
-/*
+
 if( server.get('env') == 'development' )
     server.use(express.logger('dev'));
 else
-    server.use(express.logger('default'));*/
+    server.use(express.logger('default'));
 
 server.use(express.bodyParser()); // parse from POST to rec.body
 
@@ -41,7 +41,7 @@ server.get('/', function(req, res) {
     });
 });
 
-var game = new engine.Game(32,32,30);
+var game = new engine.Game(32,32,15);
 var player = new engine.Player(engine.CreateTeam(5, 0, 0), game);
 var defaultEnemy = new engine.Player(engine.CreateTeam(1, 8, 8), game);
 game.AddPlayer(player);
