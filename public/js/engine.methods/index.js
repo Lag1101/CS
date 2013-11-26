@@ -7,7 +7,9 @@
  */
 
 var engine = (engine || (engine = require('./../engine')) );
-require('./Game');
+try{
+    require('./Game');
+}catch(e){}
 try{
     module.exports = engine;
     console.log("Server loaded %s",__filename);

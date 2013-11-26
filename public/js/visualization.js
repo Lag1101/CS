@@ -118,7 +118,7 @@ Visualization.prototype.Clear = function() {
     this.ctrl.clearRect(0, 0, this.width, this.height);
 };
 
-function VisualizationPIXI(width, height, ceilSize)
+function VisualizationPIXI(width, height, ceilSize, unitTexture)
 {
     var v = this;
     this.teamToShow = [];
@@ -137,7 +137,7 @@ function VisualizationPIXI(width, height, ceilSize)
     this.renderer.view.style.top = "0px";
     this.renderer.view.style.left = "0px";
 
-    this.texture = PIXI.Texture.fromImage("unit.png");
+    this.texture = PIXI.Texture.fromImage(unitTexture);
 
     function animate() {
         requestAnimFrame( animate );

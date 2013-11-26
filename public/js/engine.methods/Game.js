@@ -4,11 +4,12 @@
 var engine = (engine || (engine = require('./../engine')) );
 var auxiliary = (auxiliary || (auxiliary = require('./../auxiliary')) );
 
-var async = require('async');
-require('./Unit');
-require('./Bullet');
-require('./Weapon');
-require('./Field');
+try{
+    require('./Unit');
+    require('./Bullet');
+    require('./Weapon');
+    require('./Field');
+}catch(e){}
 
 (function(Game){
 
@@ -33,8 +34,7 @@ require('./Field');
     Game.prototype.ProcessPlayers = function() {
         var g = this;
         var bulletPool = [];
-        async.each( g.players,
-            function( player ){
+        g.players.forEach(function( player ){
                 Live(new engine.World(
                     player.team,
                     g.GetVisibleUnitsForPlayer(player),
@@ -74,7 +74,7 @@ require('./Field');
     };
     Game.prototype.MoveUnits = function() {
         var g = this;
-        async.each(g.players, function(player) {
+        g.players.forEach(function(player) {
                 player.team.forEach(function( unit ) {
                     if( engine.IsUnitAlive(unit) )
                         unit.Live( g.timeStep, g.field );

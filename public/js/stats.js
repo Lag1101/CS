@@ -6,7 +6,7 @@ var stats = {};
 
 (function(stats){
 
-    var relativeSpeed = 0.005;
+    var relativeSpeed = 0.025;
     var relativeSeeRange = 1.0;
 
     stats.Weapons = {
@@ -16,7 +16,7 @@ var stats = {};
             dispersion: Math.PI/180.0 * 1.0,
             range: 15.0,
             damage: 100,
-            start_speed: relativeSpeed*2,
+            start_speed: relativeSpeed,
             ammo_capacity: 10
         },
         AK: {
@@ -34,7 +34,7 @@ var stats = {};
             dispersion: Math.PI/180.0 * 10.0,
             range: 3.0,
             damage: 20,
-            start_speed: relativeSpeed/2,
+            start_speed: relativeSpeed,
             ammo_capacity: 8
         }
     };
@@ -46,7 +46,7 @@ var stats = {};
             max_health: 100,
             weapon: stats.Weapons.SVD,
             see_range: 7.0*relativeSeeRange,
-            speed: relativeSpeed / 5,
+            speed: relativeSpeed / 2,
             size: 0.5
         },
         engineer: {
@@ -54,7 +54,7 @@ var stats = {};
             max_health: 50,
             weapon: stats.Weapons.PM,
             see_range: 5.0*relativeSeeRange,
-            speed: relativeSpeed / 5,
+            speed: relativeSpeed / 2,
             size: 0.5
         },
         soldier: {
@@ -62,7 +62,7 @@ var stats = {};
             max_health: 150,
             weapon: stats.Weapons.AK,
             see_range: 5.0*relativeSeeRange,
-            speed: relativeSpeed / 5,
+            speed: relativeSpeed / 2,
             size: 0.5
         }
     };
