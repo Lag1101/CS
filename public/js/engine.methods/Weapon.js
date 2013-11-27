@@ -58,8 +58,8 @@ var auxiliary = (auxiliary || (auxiliary = require('./../auxiliary')) );
 
 try{
     module.exports = engine;
-    console.log("Server loaded %s",__filename);
+    console.log("Server loaded ",__filename);
 }catch(e)
 {
-    console.log("Client loaded %s",__filename);
+    console.log("Client loaded ","Weapon");
 }

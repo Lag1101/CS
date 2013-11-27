@@ -93,8 +93,8 @@ var auxiliary = {
 };
 try{
     module.exports = auxiliary;
-    console.log("Server loaded %s",__filename);
+    console.log("Server loaded ",__filename);
 }catch(e)
 {
-    console.log("Client loaded %s",__filename);
+    console.log("Client loaded ",'auxialary');
 }

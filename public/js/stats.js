@@ -7,7 +7,7 @@ var stats = {};
 (function(stats){
 
     var relativeSpeed = 0.025;
-    var relativeSeeRange = 1.0;
+    var relativeSeeRange = 2.0;
 
     stats.Weapons = {
         SVD: {
@@ -42,7 +42,7 @@ var stats = {};
     stats.Units = {
         keys: ['sniper', 'engineer', 'soldier'],
         sniper: {
-            symbol: 'rgba(0,0,255,1.0)',
+            symbol: 'rgb(0,0,255)',
             max_health: 100,
             weapon: stats.Weapons.SVD,
             see_range: 7.0*relativeSeeRange,
@@ -50,7 +50,7 @@ var stats = {};
             size: 0.5
         },
         engineer: {
-            symbol: 'rgba(0,255,0,1.0)',
+            symbol: 'rgb(0,255,0)',
             max_health: 50,
             weapon: stats.Weapons.PM,
             see_range: 5.0*relativeSeeRange,
@@ -58,7 +58,7 @@ var stats = {};
             size: 0.5
         },
         soldier: {
-            symbol: 'rgba(255,0,0,1.0)',
+            symbol: 'rgb(255,0,0)',
             max_health: 150,
             weapon: stats.Weapons.AK,
             see_range: 5.0*relativeSeeRange,
@@ -87,8 +87,8 @@ var stats = {};
 
 try{
     module.exports = stats;
-    console.log("Server loaded %s",__filename);
+    console.log("Server loaded ",__filename);
 }catch(e)
 {
-    console.log("Client loaded %s",__filename);
+    console.log("Client loaded ",'stats');
 }

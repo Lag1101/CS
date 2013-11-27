@@ -13,8 +13,8 @@ var engine = (engine || (engine = require('./../engine')) );
 
 try{
     module.exports = engine;
-    console.log("Server loaded %s",__filename);
+    console.log("Server loaded ",__filename);
 }catch(e)
 {
-    console.log("Client loaded %s",__filename);
+    console.log("Client loaded ",'Field');
 }

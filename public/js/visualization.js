@@ -118,26 +118,24 @@ Visualization.prototype.Clear = function() {
     this.ctrl.clearRect(0, 0, this.width, this.height);
 };
 
-function VisualizationPIXI(width, height, ceilSize, unitTexture)
+function VisualizationPIXI( width, height, ceilSize , field)
 {
     var v = this;
-    this.teamToShow = [];
+    this.teamToShow = {};
     this.width = width;
     this.height = height;
     this.ceilSize = ceilSize;
+    this.field = {};
 
-// create an new instance of a pixi stage
     this.stage = new PIXI.Stage(0x000000, true);
-
-// create a renderer instance
     this.renderer = PIXI.autoDetectRenderer(this.width, this.height, null);
+
 
     document.body.appendChild(this.renderer.view);
     this.renderer.view.style.position = "absolute";
-    this.renderer.view.style.top = "0px";
-    this.renderer.view.style.left = "0px";
+    this.ctrl = this.renderer.view;
 
-    this.texture = PIXI.Texture.fromImage(unitTexture);
+    this.CreateField(field);
 
     function animate() {
         requestAnimFrame( animate );
@@ -149,25 +147,70 @@ function VisualizationPIXI(width, height, ceilSize, unitTexture)
     }
     setTimeout(function(){requestAnimFrame(animate);}, 10);
 }
-VisualizationPIXI.prototype.Update = function(team)
-{
-    var v = this;
-    if( this.teamToShow.length == 0 ) {
-
-        for( var i = 0; i < team.length; i++ ) {
-            var bunny = new PIXI.Sprite(v.texture);
-            bunny.anchor.x = 0.5;
-            bunny.anchor.y = 0.5;
-            v.teamToShow.push(bunny);
-            v.stage.addChild(bunny);
+VisualizationPIXI.prototype.CreateField = function(field) {
+    this.field = {};
+    for( var y = 0; y < field.height; y++ )
+    {
+        this.field[y] = {};
+        for( var x = 0; x < field.width; x++ )
+        {
+            var graphics = new PIXI.Graphics();
+            graphics.beginFill(field.map[y][x].symbol);
+            graphics.drawRect(x*this.ceilSize, y*this.ceilSize, this.ceilSize, this.ceilSize);
+            this.field[y][x] = graphics;
+            this.stage.addChild(graphics);
         }
     }
+};
+VisualizationPIXI.prototype.AddUnit = function(unit) {
+    var size = unit.stats.size * this.ceilSize;
+    var unit_x = unit.position.x * this.ceilSize, unit_y = unit.position.y * this.ceilSize;
 
+    var graphics = new PIXI.Graphics();
+    graphics.beginFill(engine.IsUnitAlive(unit) ? unit.stats.symbol : 0x888888);
+    graphics.lineStyle(2, 0xFFFFFF);
+    graphics.drawCircle(unit_x, unit_y, size/2);
+
+    this.teamToShow[unit.id] = graphics;
+    this.stage.addChild(graphics);
+};
+VisualizationPIXI.prototype.Update = function(team) {
     for( var i = 0; i < team.length; i++ ) {
         var unit = team[i];
-        var bunny = v.teamToShow[i];
 
-        bunny.position.x = unit.position.x* v.ceilSize;
-        bunny.position.y = unit.position.y* v.ceilSize;
+        if(this.teamToShow[unit.id] == undefined )
+        {
+            this.AddUnit(unit);
+        }
+
+        var bunny = this.teamToShow[unit.id];
+        if( !engine.IsUnitAlive(unit) )
+            bunny.alpha = 0.3;
+
+        bunny.position.x = unit.position.x* this.ceilSize;
+        bunny.position.y = unit.position.y* this.ceilSize;
     }
-}
+};
+/*VisualizationPIXI.prototype.DrawFogOfTheWar = function( field, team ) {
+    var transparent = function(a) { return "rgba(0,0,0,"+ a.toString() + ")"; };
+
+    var position = new engine.Coordinate(0,0);
+    for (var y = 0; y < field.height; y++) {
+        position.y = y + 0.5;
+        for (var x = 0; x < field.width; x++) {
+            position.x = x + 0.5;
+            var max_visible = 0.3;
+            team.forEach(function(unit) {
+                if( engine.IsUnitAlive(unit) )
+                {
+                    var visible = engine.HowUnitCanSeeThis(unit, position);
+                    if( visible > max_visible ) max_visible = visible;
+                }
+
+            });
+            //DrawText(canvas_control, max_visible,  x * ceil_size, y * ceil_size);
+            //if ( max_visible > 0 )
+            this.DrawRect( x * this.ceilSize, y * this.ceilSize, this.ceilSize, this.ceilSize, transparent(1.0-max_visible));
+        }
+    }
+};*/

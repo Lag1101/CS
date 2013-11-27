@@ -12,6 +12,7 @@ var stats = (stats || (stats = require('./stats')) );
 var engine = {};
 (function (engine) {
 
+    var id = 0;
 
     engine.Field = function( width, height ){
             this.width = width;
@@ -43,6 +44,8 @@ var engine = {};
         this.weapon = new engine.Weapon( stats.weapon );
 
         this.stats = stats;
+
+        this.id = id++;
     };
     /**
      * @return {number}
@@ -137,9 +140,9 @@ var engine = {};
 
 try{
     module.exports = engine;
-    console.log("Server loaded %s",__filename);
+    console.log("Server loaded ",__filename);
 }catch(e)
 {
-    console.log("Client loaded %s",__filename);
+    console.log("Client loaded ",'engine');
 }
 
